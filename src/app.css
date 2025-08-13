@@ -1,0 +1,175 @@
+@import url('https://fonts.googleapis.com/css2?family=Inria+Serif:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+:root {
+  --black: #181818;
+  --rose-gold: #B76E79;
+  --rose-gold-light: #FFD1DC;
+  --rose-gold-dark: #633540;
+
+  --gray-dark: #232323;
+  --gray-medium: #444444;
+  --gray-light: #888888;
+
+  --text-primary: #F5F5F5;
+  --text-secondary: #FFD1DC;
+  --text-accent: #B76E79;
+  --text-white: #ffffff;
+  --text-black: #181818;
+  --text-white-secondary: #e0e0e0;
+  --text-black-secondary: #333333;
+
+  /* Background Colors */
+  --background-primary: #181818;
+  --background-secondary: #232323;
+  --section-background: #232323;
+  --background-overlay: rgba(24, 24, 24, 0.98);
+  --background-primary-transparent: rgba(24, 24, 24, 0.7);
+  --rose-gold-transparent: rgba(183, 110, 121, 0.7);
+  --nav-background: #181818;
+
+  --hover-color: #FFD1DC;
+  --focus-color: #B76E79;
+  --border-color: #B76E79;
+
+  /* Transition duration */
+  --primary-transition: 0.4s;
+  --quick-transition: 0.2s;
+  --slow-transition: 0.9s;
+
+  /* Border Radius */
+  --primary-radius: 12px;
+  --secondary-radius: 8px;
+  --tertiary-radius: 4px;
+
+  /* Cards */
+  --card-background: #181818;
+  /*deep dark pink*/
+}
+
+blockquote {
+  border-left: 6px solid var(--rose-gold);
+  background-color: var(--section-background);
+  margin: 2rem 0;
+  padding: 1rem 1.5rem;
+  border-radius: var(--secondary-radius);
+  color: var(--text-white-secondary);
+  font-family: 'Inria Serif', serif;
+  font-size: 1.15rem;
+  transition: background-color var(--primary-transition);
+}
+
+blockquote p {
+  margin: 0;
+}
+
+blockquote cite {
+  font-weight: 700;
+  font-style: italic;
+  color: var(--rose-gold-light);
+  display: block;
+  margin-top: 0.75rem;
+  padding-left: 0.25rem;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+body,
+html {
+  margin: 0px;
+  padding: 0px;
+}
+
+.section {
+  padding: 1rem;
+  margin: 0 auto;
+  min-height: 100vh;
+  box-sizing: border-box;
+
+}
+
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Inria Serif', serif;
+  /* upper case */
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: var(--text-primary)
+}
+
+h2 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+h3,
+h4,
+h5 {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+}
+
+p {
+  font-size: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--text-primary)
+}
+
+li {
+  font-size: 1.2rem;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--text-primary)
+}
+
+a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--hover-color);
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px;
+  background: var(--background-secondary);
+  border-radius: var(--primary-radius);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rose-gold);
+  border-radius: var(--primary-radius);
+  border: 3px solid var(--background-secondary);
+  transition: background var(--primary-transition);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rose-gold-dark);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--background-secondary);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rose-gold) var(--background-secondary);
+}
