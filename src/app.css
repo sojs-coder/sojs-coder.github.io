@@ -78,6 +78,7 @@ body,
 html {
   margin: 0px;
   padding: 0px;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .section {
@@ -172,4 +173,65 @@ a:hover {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--rose-gold) var(--background-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3,
+  h4,
+  h5 {
+    font-size: 1.25rem;
+  }
+
+  p,
+  li,
+  blockquote {
+    font-size: 1rem;
+  }
+
+  blockquote {
+    padding: 0.8rem 1rem;
+  }
+
+  .section {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3,
+  h4,
+  h5 {
+    font-size: 1.1rem;
+  }
+
+  p,
+  li,
+  blockquote {
+    font-size: 0.9rem;
+  }
+
+  blockquote {
+    padding: 0.6rem 0.8rem;
+  }
+
+  .section {
+    padding: 0.25rem;
+  }
 }

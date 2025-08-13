@@ -108,7 +108,7 @@
 
   .modal-content {
     background: var(--background-primary);
-    padding: 20px;
+    padding: 40px;
     border-radius: var(--primary-radius);
     max-width: 800px;
     max-height: 80%;
@@ -139,5 +139,36 @@
     font-size: 24px;
     cursor: pointer;
     color: #333;
+  }
+
+  @media (max-width: 768px) {
+    .project-card {
+      padding: 12px;
+      margin: 12px;
+    }
+
+    .modal-content {
+      padding: 30px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .project-card {
+      padding: 10px;
+      margin: 10px;
+    }
+
+    .modal-content {
+      padding: 20px;
+      max-width: 95%; /* Allow modal to take more width on very small screens */
+    }
+
+    .modal-content h2 {
+      font-size: 1.5rem; /* Adjust modal title size */
+    }
+
+    .modal-content p {
+      font-size: 0.9rem; /* Adjust modal description size */
+    }
   }
 </style>

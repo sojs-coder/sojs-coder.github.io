@@ -27,7 +27,7 @@
         color: var(--text-white-secondary);
     }
 
-    section img {
+        section img {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -40,6 +40,34 @@
         mix-blend-mode: multiply;
 
     }
+
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 4em;
+        }
+
+        p {
+            font-size: 20px;
+        }
+
+        .section {
+            padding: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 3em;
+        }
+
+        p {
+            font-size: 18px;
+        }
+
+        .section {
+            padding: 0.5rem;
+        }
+    }
 </style>
 
 
@@ -48,3 +76,4 @@
     <p>WebDev, AI, CI/CD, DevOps</p>
     <img src={HeroImage} alt="SoJS Coder Hero" />
 </section>
+

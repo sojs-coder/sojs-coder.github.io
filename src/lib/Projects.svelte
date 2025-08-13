@@ -80,10 +80,32 @@
     color: var(--text-white);
   }
 
-  .project-grid {
+    .project-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
     justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    .projects-container {
+      padding: 15px;
+    }
+
+    .project-grid {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .projects-container {
+      padding: 10px;
+    }
+
+    .project-grid {
+      grid-template-columns: 1fr; /* Force single column on very small screens */
+      gap: 10px;
+    }
   }
 </style>

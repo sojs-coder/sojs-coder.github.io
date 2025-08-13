@@ -127,4 +127,37 @@
     opacity: 1;
     transform: translateY(0);
   }
+
+  @media (max-width: 768px) {
+    section {
+      flex-direction: column; /* Stack columns on smaller screens */
+      padding: 24px; /* Adjust padding for smaller screens */
+    }
+
+    .section-left,
+    .section-right {
+      width: 100%; /* Full width for columns */
+      padding: 24px; /* Adjust padding for smaller screens */
+    }
+
+    /* Ensure image is not too large when stacked */
+    img {
+      max-height: 300px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    section {
+      padding: 16px;
+    }
+
+    .section-left,
+    .section-right {
+      padding: 16px;
+    }
+
+    img {
+      max-height: 200px;
+    }
+  }
 </style>

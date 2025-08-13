@@ -276,4 +276,104 @@
     font-size: 1.4rem;
     color: var(--text-secondary);
   }
+
+  /* Mobile styles (default) */
+  .hamburger {
+    display: block; /* Show hamburger by default on small screens */
+  }
+
+  .menu-overlay {
+    position: fixed;
+    top: 100px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--background-overlay);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    border: 1px solid var(--border-color);
+  }
+
+  .menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    height: 100%;
+  }
+
+  nav {
+    padding: 40px 40px 0px 40px;
+    background-color: var(--background-overlay);
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.3s ease;
+  }
+
+  nav .menu-link {
+    font-size: 3.2rem;
+  }
+
+  footer {
+    flex-direction: column; /* Stack footer links on small screens */
+    gap: 16px;
+  }
+
+  /* Tablet and Desktop styles */
+  @media (min-width: 768px) {
+    .hamburger {
+      display: none; /* Hide hamburger on larger screens */
+    }
+
+    .menu-overlay {
+      position: static;
+      background: none;
+      backdrop-filter: none;
+      border: none;
+      padding: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+      width: auto;
+      height: auto;
+    }
+
+    .menu-links {
+      flex-direction: row;
+      gap: 32px; /* Space out links horizontally */
+      height: auto;
+    }
+
+    nav {
+      padding: 0;
+      background: none;
+      overflow: visible;
+    }
+
+    nav .menu-link {
+      font-size: 1.2rem; /* Smaller font size for desktop links */
+      padding: 0;
+    }
+
+    nav .menu-link:hover {
+      transform: none; /* Remove transform on hover for desktop */
+    }
+
+    .menu-link-text::after {
+      display: none; /* Hide underline animation for desktop */
+    }
+
+    footer {
+      display: none; /* Hide footer on desktop, or move it elsewhere if needed */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    nav .menu-link {
+      font-size: 1.4rem;
+    }
+  }
 </style>

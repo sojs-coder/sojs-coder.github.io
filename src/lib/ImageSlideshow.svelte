@@ -31,22 +31,22 @@
           </div>
         {/key}
       </div>
-      <button class="prev" on:click={prevImage} aria-label="Previous image"
+      <button class="prev" onclick={prevImage} aria-label="Previous image"
         >&#10094;</button
       >
-      <button class="next" on:click={nextImage} aria-label="Next image"
+      <button class="next" onclick={nextImage} aria-label="Next image"
         >&#10095;</button
       >
     </div>
 
     <div class="info-area">
-      <figcaption>{images[currentIndex][1]}</figcaption>
+      <div class ="figcaption">{images[currentIndex][1]}</div>
       <div class="dots">
         {#each images as _, i}
           <button
             class="dot"
             class:active={currentIndex === i}
-            on:click={() => goToImage(i)}
+            onclick={() => goToImage(i)}
             aria-label="Go to slide {i + 1}"
           ></button>
         {/each}
@@ -105,15 +105,14 @@
     gap: 10px;
   }
 
-  figcaption {
+  .figcaption {
     font-size: 1.1em;
     font-weight: bold;
     color: var(--text-primary);
   }
 
-  .dots {
-    /* No special positioning needed now */
-  }
+  /* .dots {
+  } */
 
   .dot {
     cursor: pointer;
@@ -161,8 +160,52 @@
       border-radius: 3px 0 0 3px;
   }
 
-  .prev:hover,
+    .prev:hover,
   .next:hover {
       background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  @media (max-width: 768px) {
+    .info-area {
+      padding: 10px;
+    }
+
+    .figcaption {
+      font-size: 1em;
+    }
+
+    .prev,
+    .next {
+      padding: 12px;
+      font-size: 16px;
+    }
+
+    .dot {
+      height: 10px;
+      width: 10px;
+      margin: 0 3px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .info-area {
+      padding: 8px;
+    }
+
+    .figcaption {
+      font-size: 0.9em;
+    }
+
+    .prev,
+    .next {
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    .dot {
+      height: 8px;
+      width: 8px;
+      margin: 0 2px;
+    }
   }
 </style>

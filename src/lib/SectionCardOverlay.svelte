@@ -137,4 +137,28 @@
     opacity: 1;
     transform: translateY(0);
   }
+
+  @media (max-width: 768px) {
+    section {
+      padding: 40px; /* Adjust padding for smaller screens */
+      min-height: 40vh; /* Slightly reduce min-height */
+    }
+
+    .floating-card {
+      max-width: 90%; /* Allow card to take more width on smaller screens */
+      padding: 32px; /* Adjust padding for smaller screens */
+    }
+  }
+
+  @media (max-width: 480px) {
+    section {
+      padding: 20px;
+      min-height: 30vh;
+    }
+
+    .floating-card {
+      max-width: 95%;
+      padding: 24px;
+    }
+  }
 </style>
