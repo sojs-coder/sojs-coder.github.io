@@ -10,7 +10,7 @@
   import RoomMateChat from "../assets/roommate_chat.png";
   import RoomMateLoginOptions from "../assets/roommate_login_options.png";
 
-  import Mural from "../assets/mural.png";
+  import Mural from "../assets/navigation/fprojects.png";
   import Mural1 from "../assets/mural1.png";
   import Mural2 from "../assets/mural2.png";
 

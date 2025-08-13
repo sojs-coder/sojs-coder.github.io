@@ -1,7 +1,4 @@
 <script lang="ts">
-  import svelteLogo from "./assets/svelte.svg";
-  import viteLogo from "/vite.svg";
-  import Counter from "./lib/Counter.svelte";
   import Navigation from "./lib/Navigation.svelte";
   import Hero from "./lib/Hero.svelte";
   import SectionCardOverlay from "./lib/SectionCardOverlay.svelte";
@@ -14,7 +11,6 @@
   import CCPortedFeature from "./assets/ccportedfeature.png";
   import RomLibrary from "./assets/romlibrary.png";
   import SpriteBuilder from "./assets/spritebuilder.png";
-  import Journal from "./assets/journal.png";
   import AboutSectionImage from "./assets/forgeeditor.png";
   // import AboutContinued from "./assets/journal.png";
   import AboutContinued from "./assets/spritebuilder.png";
