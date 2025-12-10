@@ -87,6 +87,7 @@
   let mouseY = $state(0);
   let cursorDot: HTMLElement | null = $state(null);
   let isHoveringClickable = $state(false);
+  let isCursorVisible = $state(true);
 
   function isClickableElement(element: HTMLElement): boolean {
     if (!element) return false;
@@ -125,23 +126,37 @@
     isHoveringClickable = foundClickable;
   }
 
+  function handleMouseLeave() {
+    isCursorVisible = false;
+  }
+
+  function handleMouseEnter() {
+    isCursorVisible = true;
+  }
+
   onMount(() => {
     document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnter);
     
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnter);
     };
   });
 </script>
 
 <main>
   <!-- Custom cursor dot -->
-  <div 
-    class="custom-cursor"
-    class:clickable={isHoveringClickable}
-    style="left: {mouseX}px; top: {mouseY}px;"
-    bind:this={cursorDot}
-  ></div>
+  {#if isCursorVisible}
+    <div 
+      class="custom-cursor"
+      class:clickable={isHoveringClickable}
+      style="left: {mouseX}px; top: {mouseY}px;"
+      bind:this={cursorDot}
+    ></div>
+  {/if}
 <!--
   <Navigation />
   <Hero />
