@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import Navigation from "./lib/Navigation.svelte";
   import Hero from "./lib/Hero.svelte";
   import SectionCardOverlay from "./lib/SectionCardOverlay.svelte";
@@ -81,9 +82,67 @@
 
   import Projects from "./lib/Projects.svelte";
   import Footer from "./lib/Footer.svelte";
+
+  let mouseX = $state(0);
+  let mouseY = $state(0);
+  let cursorDot: HTMLElement | null = $state(null);
+  let isHoveringClickable = $state(false);
+
+  function isClickableElement(element: HTMLElement): boolean {
+    if (!element) return false;
+    
+    const tagName = element.tagName.toLowerCase();
+    return tagName === 'a' || 
+           tagName === 'button' || 
+           tagName === 'input' ||
+           element.classList.contains('clickable');
+  }
+
+  function handleMouseMove(event: MouseEvent) {
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+
+    // Find element under cursor (cursor dot has pointer-events: none, so it won't interfere)
+    const element = document.elementFromPoint(event.clientX, event.clientY) as HTMLElement;
+
+    if (!element || element === cursorDot) {
+      isHoveringClickable = false;
+      return;
+    }
+
+    // Check if element or any parent is clickable
+    let currentElement: HTMLElement | null = element;
+    let foundClickable = false;
+    
+    while (currentElement && currentElement !== document.body) {
+      if (isClickableElement(currentElement)) {
+        foundClickable = true;
+        break;
+      }
+      currentElement = currentElement.parentElement;
+    }
+
+    isHoveringClickable = foundClickable;
+  }
+
+  onMount(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
+  });
 </script>
 
 <main>
+  <!-- Custom cursor dot -->
+  <div 
+    class="custom-cursor"
+    class:clickable={isHoveringClickable}
+    style="left: {mouseX}px; top: {mouseY}px;"
+    bind:this={cursorDot}
+  ></div>
+<!--
   <Navigation />
   <Hero />
   <section id="About">
@@ -229,5 +288,6 @@
   <section id="Projects">
     <Projects />
   </section>
+-->
   <Footer  />
 </main>

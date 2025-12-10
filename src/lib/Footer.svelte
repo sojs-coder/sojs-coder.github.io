@@ -1,31 +1,56 @@
-<section class = "section">
+<script lang="ts">
+  import BackgroundSlideshow from "./BackgroundSlideshow.svelte";
+</script>
+
+<div class="footer-container">
+  <BackgroundSlideshow />
+  <section class="section">
     <h1>Matthieu Fuller</h1>
-    <p>WebDev, AI, CI/CD, DevOps</p>
+    <p>Building software @ <a href = "https://lawnly.com">Lawnly</a>, <a href = "https://signalor.app">Signalor</a>, <a href="https://ccported.click">CCPorted</a></p>
+    <p>Specialized in DevOps, SWE, and food.</p>
+    <p>Hugely replaceable by AI</p>
     <h2>Contact</h2>
     <ul>
-        <li>Email: <a href="mailto:sojscoder@gmail.com">sojscoder@gmail.com</a></li>
-        <li>Discord: <a href="https://discord.gg/GDEFRBTT3Z">CCPorted server</a></li>
-        <li>LinkedIn: <a href="https://www.linkedin.com/in/matthieu-fuller-4585012b4">Matthieu Fuller</a></li>
-        <li>GitHub: <a href="https://github.com/sojs-coder">sojs-coder</a></li>
+        <li><a href="mailto:sojscoder@gmail.com">Email</a></li>
+        <li>
+            <a href="https://www.linkedin.com/in/matthieu-fuller-4585012b4"
+                >LinkedIn</a
+            >
+        </li>
+        <li><a href="https://github.com/sojs-coder">Github</a></li>
     </ul>
 
-    <h3>Recruitment</h3>
-    <p>If you're interested in joining the development team for CCPorted, Forge Engine, or AdHoc, feel free to reach out!</p>
+    <h2>Recruitment</h2>
+    <p>I am currently looking for talent. Contact me if interested.</p>
 
-    <p>&copy; {new Date().getFullYear()} Matthieu Fuller. All rights reserved. "SoJS", "CCPorted", "Adhoc", and "Forge Game Engine" are protected names under common law copyright.</p>
-</section>
-
+    <!-- <p>&copy; {new Date().getFullYear()} Matthieu Fuller. All rights reserved. "SoJS", "CCPorted", "Adhoc", and "Forge Game Engine" are protected names under common law copyright.</p> -->
+  </section>
+</div>
 
 <style>
+    .footer-container {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+    }
+    
+    * {
+        font-family: "Inria Serif", serif;
+    }
     section {
-        background-color: var(--rose-gold-dark);
+        position: relative;
+        /* background-color: rgba(99, 53, 64, 0.85); */
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
-        padding: 50px
+        padding: 50px;
+        z-index: 1;
     }
-    a{
+    p {
+        line-height: 0.5;
+    }
+    a {
         color: var(--text-secondary);
     }
     ul {
