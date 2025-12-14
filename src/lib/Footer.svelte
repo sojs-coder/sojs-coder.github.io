@@ -13,7 +13,7 @@
     <ul>
         <li><a href="mailto:sojscoder@gmail.com">Email</a></li>
         <li>
-            <a href="https://www.linkedin.com/in/matthieu-fuller-4585012b4"
+            <a href="https://www.linkedin.com/in/matthieu-fuller"
                 >LinkedIn</a
             >
         </li>
