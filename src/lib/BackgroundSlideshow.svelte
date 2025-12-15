@@ -17,7 +17,6 @@
     import TheAdvocate from "../assets/the_advocate.png";
     import SpriteBuilder from "../assets/spritebuilder.png";
     import AdHocAnatics from "../assets/adhoc_analytics.png";
-    import CCPortedFeature from "../assets/ccported_feature.png";
     import RoomMateSearch from "../assets/roommate_advanced_search.png";
 
     // Hard-coded images for the slideshow
@@ -37,7 +36,6 @@
         TheAdvocate,
         SpriteBuilder,
         AdHocAnatics,
-        CCPortedFeature,
         RoomMateSearch,
     ];
 
