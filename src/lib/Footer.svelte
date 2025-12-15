@@ -7,8 +7,6 @@
   <section class="section">
     <h1>Matthieu Fuller</h1>
     <p>Building software @ <a href = "https://lawnly.com">Lawnly</a>, <a href = "https://signalor.app">Signalor</a>, <a href="https://ccported.click">CCPorted</a></p>
-    <p>Specialized in DevOps, SWE, and food.</p>
-    <p>Hugely replaceable by AI</p>
     <h2>Contact</h2>
     <ul>
         <li><a href="mailto:sojscoder@gmail.com">Email</a></li>
@@ -19,9 +17,6 @@
         </li>
         <li><a href="https://github.com/sojs-coder">Github</a></li>
     </ul>
-
-    <h2>Recruitment</h2>
-    <p>I am currently looking for talent. Contact me if interested.</p>
 
     <!-- <p>&copy; {new Date().getFullYear()} Matthieu Fuller. All rights reserved. "SoJS", "CCPorted", "Adhoc", and "Forge Game Engine" are protected names under common law copyright.</p> -->
   </section>
