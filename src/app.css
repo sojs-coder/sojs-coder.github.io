@@ -47,6 +47,10 @@
   /*deep dark pink*/
 }
 
+* {
+    font-family: "Inria Serif", serif;
+}
+
 blockquote {
   border-left: 6px solid var(--rose-gold);
   background-color: var(--section-background);
