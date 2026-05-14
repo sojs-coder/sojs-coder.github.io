@@ -1,308 +1,401 @@
-<script lang="ts">
-  import { onMount } from "svelte";
-  import Navigation from "./lib/Navigation.svelte";
-  import Hero from "./lib/Hero.svelte";
-  import SectionCardOverlay from "./lib/SectionCardOverlay.svelte";
+<script>
+  import ProjectCard from "./lib/ProjectCard.svelte";
 
-  import SectionCard from "./lib/SectionCard.svelte";
-
-  import ImageSlideshow from "./lib/ImageSlideshow.svelte";
-  import Tags from "./lib/Tags.svelte";
-
-  import CCPortedFeature from "./assets/ccportedfeature.png";
-  import RomLibrary from "./assets/romlibrary.png";
-  import SpriteBuilder from "./assets/spritebuilder.png";
-  import AboutSectionImage from "./assets/forgeeditor.png";
-  // import AboutContinued from "./assets/journal.png";
-  import AboutContinued from "./assets/spritebuilder.png";
-
-  import Ballz from "./assets/ballz.png";
-  import Dragonball from "./assets/dragonball.png";
-  import Minecraft from "./assets/minecraft.png";
-
-  import ForgeEngineNodeEditor from "./assets/fe_ne.png";
-  import FlappySprite from "./assets/flappy_sprite.png";
-  import NodeLibrary from "./assets/node_library.png";
-  import Physics from "./assets/physics.png";
-  import Action from "./lib/Action.svelte";
-
-  import AdhocHome from "./assets/adhoc_home.png";
-  import AdhocAnalytics from "./assets/adhoc_analytics.png";
-  import AdhocInventory from "./assets/adhoc_inventory.png";
-  import AdhocCampaign from "./assets/adhoc_campaign.png";
-
-  const featuredImages: [string, string][] = [
-    [CCPortedFeature, "The CCPorted game library home page"],
-    [Minecraft, "Playing minecraft on CCPorted"],
-    [Ballz, "BallZ, a CCPorted original"],
-    [
-      RomLibrary,
-      "The CCPorted ROM library, with well over 300 well-known titles",
-    ],
-    [Dragonball, "DragonBall, a popular anime-inspired game, on CCPorted"],
+  const heroProjects = [
+    {
+      id: "hero-feature",
+      title: "Signalor",
+      description: "Signalor is redefining the breadth of market analysis investors can perform.",
+      category: "Featured",
+      postTitle: "Consumer Intelligence for Capital Markets",
+      postBody:
+        "Signalor aggregates millions of consumer reviews across 17 platforms into institutional-grade brand intelligence, built for equity analysts, portfolio managers, and VC diligence teams.",
+      // postMarkdownPath: "/posts/atlas-commerce.md",
+      liveUrl: "https://signalor.app/",
+      imageUrl: "/images/signalor.png",
+      width: 1920,
+      height: 1280,
+      slot: "feature",
+    },
+    {
+      id: "hero-right-1",
+      title: "CCPorted",
+      description: "Play video games.",
+      category: "Featured",
+      postTitle: "Hugely Avaialable Video Game Distribution",
+      postBody: "Deployed across over 30 domains, >10 servers, and hundreds of edge regions. Built using Svelte, deployed at edge using S3, Cloudfront, and Cloudflare",
+      liveUrl: "https://ccported.web.app",
+      width: 1200,
+      height: 900,
+      slot: "rightTop",
+      imageUrl: "/images/ccported.png"
+    },
+    {
+      id: "hero-right-2",
+      title: "Forge Engine",
+      description: "From-scratch HTML Game Engine",
+      category: "Internal Tool",
+      postTitle: "Develop Games Faster",
+      postBody: "CCPorted's internal game engine, used for making custom titles. Built in raw HTML, CSS, and TS.",
+      liveUrl: "https://forge.sojs.dev",
+      width: 1200,
+      height: 900,
+      slot: "rightMid",
+      imageUrl: "/images/forge.png"
+    },
+    {
+      id: "hero-corner",
+      title: "Interceptor",
+      description: "Clone any webpage.",
+      category: "Internal Tool",
+      postTitle: "Circumventing anti-bot guards",
+      postBody: "A single command spins up headless browsers, blocks scripts designed to stop scraping and effectively creates a perfect clone of the site locally. Used for phishing demonstrations with ACM UCSD Cyber workshops.",
+      liveUrl: "https://example.com/demo-signal",
+      width: 1200,
+      height: 900,
+      slot: "corner",
+      imageUrl: "/images/interceptor.png"
+    },
+    {
+      id: "hero-bottom-1",
+      title: "Mural",
+      description: "Collaborative online painting.",
+      category: "Project",
+      postBody: "Every user gets a single color and a brush. They must communicate through voice chat to build something magnificent.",
+      width: 1200,
+      height: 900,
+      slot: "bottomLeft",
+      imageUrl: "/images/mural.png"
+    },
+    {
+      id: "hero-bottom-2",
+      title: "AdHoc",
+      description: "Privacy-first custom ad-network",
+      category: "Project",
+      postTitle: "Privacy First Advertising is not an Oxymoron",
+      postBody: "A Q-Learning table evolves recommendations based on signals purely from general user engagement with the inventory and the parnter site itself, never based on individual user information.",
+      liveUrl: "",
+      width: 1200,
+      height: 900,
+      slot: "bottomMid",
+      imageUrl: "/images/adhoc.png"
+    },
   ];
-  const forgeEngineImages: [string, string][] = [
-    [
-      ForgeEngineNodeEditor,
-      "Edit and create custom nodes to extend engine functionality",
-    ],
-    [
-      FlappySprite,
-      "Create and edit sprites with the sprite editor to use in your games",
-    ],
-    [
-      NodeLibrary,
-      "Publish your custom nodes for use in other people's projects, and import ones you find useful",
-    ],
-    [
-      Physics,
-      "Simulate realistic physics with rigidbody simulation using Matter.js + Forge",
-    ],
-    [
-      SpriteBuilder,
-      "Create animations easily that can quickly be imported into your project",
-    ],
-  ];
 
-  const adhocImages: [string, string][] = [
-    [AdhocHome, "AdHoc is a privacy-first advertising platform"],
-    [
-      AdhocAnalytics,
-      "Easily track earnings, click through rates, and impressions",
-    ],
-    [
-      AdhocInventory,
-      "Manage inventory with ease using AdHoc's intuitive interface",
-    ],
-    [
-      AdhocCampaign,
-      "Create and manage advertising campaigns effortlessly",
-    ],
-  ];
-
-  import Projects from "./lib/Projects.svelte";
-  import Footer from "./lib/Footer.svelte";
-
-  let mouseX = $state(0);
-  let mouseY = $state(0);
-  let cursorDot: HTMLElement | null = $state(null);
-  let isHoveringClickable = $state(false);
-  let isCursorVisible = $state(true);
-
-  function isClickableElement(element: HTMLElement): boolean {
-    if (!element) return false;
-    
-    const tagName = element.tagName.toLowerCase();
-    return tagName === 'a' || 
-           tagName === 'button' || 
-           tagName === 'input' ||
-           element.classList.contains('clickable');
-  }
-
-  function handleMouseMove(event: MouseEvent) {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-
-    // Find element under cursor (cursor dot has pointer-events: none, so it won't interfere)
-    const element = document.elementFromPoint(event.clientX, event.clientY) as HTMLElement;
-
-    if (!element || element === cursorDot) {
-      isHoveringClickable = false;
-      return;
+  const archiveProjects = [
+    {
+      id: "g1",
+      title: "Startub Incubator Website",
+      description: "UCSD's startup scene, in website form.",
+      category: "Work",
+      postBody: "Built with a small team, the website manages startups within each batch, member attendance/management, and each startup's blog.",
+      liveUrl: "https://startupincubatorsd.com",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/startupincubatorsd.png"
+    },
+    {
+      id: "g2",
+      title: "Triton Trading Group Website",
+      description: "Everyone needs a website these days.",
+      category: "Work",
+      postTitle: "Mobile Views are More Important",
+      postBody: "Built and designed landing pages for Triton Trading Group's organization, including Asset Management, Financial Planning and Advisory, and Quantitative Trading pages.",
+      liveUrl: "https://tritontradinggroup.org",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/tritontradinggroup.png"
+    },
+    {
+      id: "g3",
+      title: "Ghost Device",
+      description: "Geospatial security.",
+      category: "Work",
+      postTitle: "VPNs, but for location",
+      postBody: "CTO for a startup that builds a small hardware device. It attaches to your phone and fiddles with it so that all apps reading from native location APIs will see custom routes.",
+      liveUrl: "https://ghostdevice.xyz",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/ghostdevice.png"
+    },
+    {
+      id: "g4",
+      title: "WorldHacks",
+      description: "Breaking world records (in the works)",
+      category: "Project",
+      postTitle: "The World's Largest Hackathon",
+      postBody: "In partnership with the Startup Incubator Club, we are trying to create the worlds biggest tech tradition.",
+      liveUrl: "https://worldhacks.xyz",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/worldhacks.png"
+    },
+    {
+      id: "g5",
+      title: "Thead Mover Bot",
+      description: "Discord server management",
+      category: "Project",
+      postTitle: "Move Messages around",
+      postBody: "Installed to ~150 servers, this bot allows the user to move messages into threads, helping to keep main channels clear.",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/threadmoverbot.png"
+    },
+    {
+      id: "g6",
+      title: "BallZ",
+      description: "Don't let the bricks touch the floor.",
+      category: "Video Game",
+      postTitle: "LH-Certified",
+      postBody: "Bounce the balls around to break bricks that come down. Over 60K plays on CCPorted.",
+      liveUrl: "https://ccported.github.io/play?gameID=game_a1a3_7ed8bf533bbdd",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/ballz.png"
+    },
+    {
+      id: "g7",
+      title: "TSFGOKT",
+      description: "Don't let the little green guys touch you.",
+      category: "Video Game",
+      postTitle: "The So Fun Game Of Killing Things",
+      postBody: "About 10k plays on CCPorted, mild success on ReplTalk, back when that existed.",
+      liveUrl: "https://ccported.github.io/play?gameID=game_15f9_3ab4c653b68958",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/tsfgokt.png"
+    },
+    {
+      id: "g8",
+      title: "Sisyphian Game",
+      description: "You are Sisyphus, hunting for berries.",
+      category: "Video Game",
+      postTitle: "Code X Philosophy",
+      postBody: "Get lost in this game for hours completing menial tasks. Submitted for an english project back in high school.",
+      liveUrl: "https://sojs.dev/Sisyphian_Game/",
+      width: 1200,
+      height: 900,
+      imageUrl: "/images/sisyphian.png"
     }
+  ];
 
-    // Check if element or any parent is clickable
-    let currentElement: HTMLElement | null = element;
-    let foundClickable = false;
-    
-    while (currentElement && currentElement !== document.body) {
-      if (isClickableElement(currentElement)) {
-        foundClickable = true;
-        break;
-      }
-      currentElement = currentElement.parentElement;
-    }
+  let expandedId = $state(null);
 
-    isHoveringClickable = foundClickable;
+  function toggle(id) {
+    expandedId = expandedId === id ? null : id;
   }
-
-  function handleMouseLeave() {
-    isCursorVisible = false;
-  }
-
-  function handleMouseEnter() {
-    isCursorVisible = true;
-  }
-
-  onMount(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mouseenter', handleMouseEnter);
-    
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      document.removeEventListener('mouseenter', handleMouseEnter);
-    };
-  });
 </script>
 
 <main>
-  <!-- Custom cursor dot -->
-  {#if isCursorVisible}
-    <div 
-      class="custom-cursor"
-      class:clickable={isHoveringClickable}
-      style="left: {mouseX}px; top: {mouseY}px;"
-      bind:this={cursorDot}
-    ></div>
-  {/if}
-<!--
-  <Navigation />
-  <Hero />
-  <section id="About">
-    <SectionCard image={AboutSectionImage} order={-1}>
-      {#snippet leftcontent()}
-        <h2>About</h2>
-        <blockquote>
-          <p>I do not write code- I write poetry...</p>
-          <cite>Me, 2024</cite>
-        </blockquote>
-        <p>
-          Since 2017, every project I have made has begun as a dream. The music
-          I hear comes from the orchestra I conduct in the cloud. Each project
-          is a chance to create something that I can truly be proud of,
-          something that, even if it fails, I can learn from and grow.
-        </p>
-      {/snippet}
-    </SectionCard>
-    <SectionCardOverlay backgroundImage={AboutContinued} float="flex-start">
-      {#snippet cardContent()}
-        <h2>About, continued...</h2>
-        <blockquote>
-          <p>
-            The most important property of a program is whether it accomplishes
-            the intention of its user
-          </p>
-          <cite>
-            C.A.R. Hoare, 1969, "An Axiomatic Basis for Computer Programming"
-          </cite>
-        </blockquote>
-        <p>
-          I write with a sense of purpose and a desire to create something
-          beautiful. I want the user to be awestruck by what they create with my
-          tool. By bringing beautiful things into the world, I hope to inspire
-          others in their own pursuit of beauty.
-        </p>
-        <p>
-          So who am I?
-          <br />
-          I am a web developer, a cloud orchestrator, a CI/CD specialist, a DevOps
-          Engineer, a frontend developer, a UX designer, a backend architect, a database
-          administrator, a systems engineer, a software engineer, a programmer, a
-          coder, a creator, and a dreamer.
-        </p>
-      {/snippet}
-    </SectionCardOverlay>
+  <section class="hero-grid">
+    {#each heroProjects as project (project.id)}
+      <div class={`slot ${project.slot}`}>
+        <ProjectCard
+          project={project}
+          expanded={expandedId === project.id}
+          onToggle={() => toggle(project.id)}
+          isFeature={project.slot === "feature"}
+        />
+      </div>
+    {/each}
   </section>
-  <section id="FeaturedProjects">
-    <SectionCard>
-      {#snippet leftcontent()}
-        <ImageSlideshow images={featuredImages} />
-      {/snippet}
-      {#snippet rightcontent()}
-        <h2>Featured Projects</h2>
-        <blockquote>
-          <p>
-            Any sufficiently advanced technology is indistinguishable from
-            magic.
-          </p>
-          <cite>
-            Arthur C. Clarke, 1973, "Profiles of the Future: An Inquiry into
-            the Limits of the Possible""</cite>
-        </blockquote>
-        <h3>Project 0</h3>
-        <h4>CCPorted</h4>
-        <Tags tags={["Docker", "AWS", "HTML", "CSS", "JS"]} />
-        <p>
-          Arguably my greatest and most successful achievement, CCPorted was
-          created one day during a slow high school english class. Through this
-          bordem, a muse came to me in vision. "What if I could play some games
-          on my computer right now?"
-        </p>
-        <p>
-          Blocked, however, by the school administration's view on what
-          constitutes acceptable use of technology, I decided that enough was
-          enough, and built CCPorted, which deploys hundreds of games to many
-          different domains to specifically target students.
-        </p>
-        <Action type="primary" href="https://ccported.click" target="_blank">
-          Visit CCPorted
-        </Action>
-      {/snippet}
-    </SectionCard>
-    <SectionCard order={-1}>
-      {#snippet leftcontent()}
-        <ImageSlideshow images={forgeEngineImages} />
-      {/snippet}
-      {#snippet rightcontent()}
-        <h2>Featured Projects, Continued...</h2>
-        <h3>Project 1</h3>
-        <h4>Forge Engine</h4>
-        <Tags tags={["GCP", "Supabase", "TS", "HTML", "CSS", "JS"]} />
-        <p>
-          When building CCPorted, I struggled to quickly develop original games.
-          I tried many different game engines, but I found that for most HTML
-          games, the quickest way to quickly get up and running was to use my
-          own custom engines.
-        </p>
-        <p>
-          This, however, got tiresome, as I had to rewrite the same base
-          functionality over and over again for many games. Thus, Forge Engine
-          was born, for quickly "Forge" HTML games. The engine is based on the
-          concept of a node tree, where each node represents a piece of
-          functionality. Tying these nodes together allows you to quickly create
-          any number of games with very little code or time.
-        </p>
-        <Action
-          type="primary"
-          href="https://sojs-coder.github.io/forge"
-          target="_blank"
-        >
-          Visit Forge Engine
-        </Action>
-      {/snippet}
-    </SectionCard>
-    <SectionCard order={1}>
-      {#snippet leftcontent()}
-        <ImageSlideshow images={adhocImages} />
-      {/snippet}
-      {#snippet rightcontent()}
-        <h2>Featured Projects, Continued...</h2>
-        <h3>Project 2</h3>
-        <h4>AdHoc</h4>
-        <p>
-          In my struggle to monetize my projects and my desire to create a
-          platform where publishers and advertisers could easily advertise and
-          monetize their content, I created AdHoc, a privacy-first advertising
-          platform, built on the principles of user consent and data protection.
-        </p>
-        <p>
-          In fact, user consent is not even implemented, because there is
-          nothing for the user to consent to! No tracking scripts, no cookies,
-          no data collection. Just pure advertising based on the content of the
-          site and the content of the ad.
-        </p>
-        <p>
-          AdHoc is still under development, and multiple clients are lined up to
-          start using the platform as soon as it is completed.
-        </p>
-      {/snippet}
-    </SectionCard>
+
+  <section class="archive-grid">
+    {#each archiveProjects as project (project.id)}
+      <ProjectCard
+        project={project}
+        expanded={expandedId === project.id}
+        onToggle={() => toggle(project.id)}
+        isFeature={false}
+      />
+    {/each}
   </section>
-  <section id="Projects">
-    <Projects />
-  </section>
--->
-  <Footer  />
 </main>
+
+<footer>
+  <div class="footer-identity">
+    <span class="name">Matthieu Fuller</span>
+    <span class="footer-desc">UCSD CS &amp; Math &middot; Building <a href="https://signalor.app" target="_blank" rel="noreferrer">Signalor</a> &middot; Engineer</span>
+  </div>
+  <nav>
+    <a href="mailto:sojscoder@gmail.com">sojscoder@gmail.com</a>
+    <a href="https://www.linkedin.com/in/matthieu-fuller" target="_blank" rel="noreferrer">LinkedIn</a>
+    <a href="https://github.com/sojs-coder" target="_blank" rel="noreferrer">GitHub</a>
+    <a href="/resume.pdf" download>Resume</a>
+  </nav>
+</footer>
+
+<style>
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(html, body) {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    background: #f6f6f3;
+    color: #111;
+    font-family: "Cormorant Garamond", "Iowan Old Style", "Times New Roman", serif;
+  }
+
+  :global(#app) {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  :global(*) {
+    scrollbar-width: thin;
+    scrollbar-color: #b7b7b0 transparent;
+  }
+
+  :global(*::-webkit-scrollbar) {
+    width: 8px;
+    height: 8px;
+  }
+
+  :global(*::-webkit-scrollbar-track) {
+    background: transparent;
+  }
+
+  :global(*::-webkit-scrollbar-thumb) {
+    background: #b7b7b0;
+    border-radius: 0;
+  }
+
+  :global(*::-webkit-scrollbar-corner) {
+    background: transparent;
+  }
+
+  main {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hero-grid,
+  .archive-grid {
+    width: 100%;
+    height: 100vh;
+    display: grid;
+    gap: 0;
+  }
+
+  .hero-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
+  .slot.feature {
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
+  }
+
+  .slot.rightTop {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .slot.rightMid {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .slot.corner {
+    grid-column: 3;
+    grid-row: 3;
+  }
+
+  .slot.bottomLeft {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .slot.bottomMid {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+
+  .archive-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
+  footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 3rem;
+    padding: 4rem 2rem 3rem;
+    border-top: 1px solid #c8c8c2;
+    border-left: 1px solid #c8c8c2;
+  }
+
+  .footer-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  footer .name {
+    font-size: 1.45rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #111;
+  }
+
+  .footer-desc {
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    color: rgba(17, 17, 17, 0.5);
+    line-height: 1.5;
+  }
+
+  .footer-desc a {
+    color: rgba(17, 17, 17, 0.7);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .footer-desc a:hover {
+    color: #111;
+  }
+
+  footer nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+
+  footer nav a {
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: rgba(17, 17, 17, 0.55);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  footer nav a:hover {
+    color: #111;
+  }
+
+  @media (max-width: 900px) {
+    .hero-grid,
+    .archive-grid {
+      height: auto;
+      min-height: 100vh;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: none;
+      grid-auto-rows: minmax(40vh, 1fr);
+    }
+
+    .hero-grid .slot {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+</style>

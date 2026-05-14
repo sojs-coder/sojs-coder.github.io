@@ -1,174 +1,371 @@
-<script lang="ts">
-  import ImageSlideshow from "./ImageSlideshow.svelte";
+<script>
+  import PlaceholderImage from "./PlaceholderImage.svelte";
+  import { parseMarkdownToHtml } from "./markdown.js";
 
-  export let title: string;
-  export let shortDescription: string;
-  export let thumbnail: string;
-  export let fullDescription: string;
-  export let images: [string, string][];
+  let {
+    project,
+    expanded = false,
+    onToggle = () => {},
+    isFeature = false,
+  } = $props();
 
-  let showModal = false;
-
-  function openModal() {
-    showModal = true;
+  function closeModal(event) {
+    event.stopPropagation();
+    onToggle();
   }
 
-  function closeModal() {
-    showModal = false;
+  function handleKeydown(event) {
+    if (expanded && event.key === "Escape") onToggle();
   }
 
-  $: if (showModal) {
-    document.body.classList.add("no-scroll");
-  } else {
-    document.body.classList.remove("no-scroll");
-  }
+  const markdownCache = new Map();
+  let markdownHtml = $state("");
+  let markdownLoading = $state(false);
+  let markdownError = $state("");
+
+  $effect(() => {
+    if (!expanded || !project.postMarkdownPath) return;
+
+    let cancelled = false;
+    async function loadMarkdown() {
+      markdownError = "";
+      markdownLoading = true;
+      if (markdownCache.has(project.postMarkdownPath)) {
+        markdownHtml = markdownCache.get(project.postMarkdownPath);
+        markdownLoading = false;
+        return;
+      }
+
+      try {
+        const res = await fetch(project.postMarkdownPath);
+        if (!res.ok) {
+          throw new Error(`Could not load ${project.postMarkdownPath}`);
+        }
+        const text = await res.text();
+        const parsed = parseMarkdownToHtml(text);
+        markdownCache.set(project.postMarkdownPath, parsed);
+        if (!cancelled) markdownHtml = parsed;
+      } catch (err) {
+        if (!cancelled) markdownError = err?.message ?? "Failed to load post markdown.";
+      } finally {
+        if (!cancelled) markdownLoading = false;
+      }
+    }
+
+    loadMarkdown();
+    return () => {
+      cancelled = true;
+    };
+  });
 </script>
 
-<div
-  class="project-card"
-  role="button"
-  tabindex="0"
-  aria-label="Open project details"
-  on:click={openModal}
-  on:keydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") openModal();
-  }}
->
-  <img src={thumbnail} alt={title} class="thumbnail" />
-  <h3>{title}</h3>
-  <p>{shortDescription}</p>
-</div>
+<svelte:window onkeydown={handleKeydown} />
 
-{#if showModal}
-  <div
-    class="modal-overlay"
-    role="button"
-    tabindex="0"
-    aria-label="Close modal"
-    on:click={closeModal}
-    on:keydown={(e) => {
-      if (e.key === "Enter" || e.key === " ") closeModal();
-    }}
-  >
-    <div
-      class="modal-content"
-      role="dialog"
-      aria-modal="true"
-      tabindex="0"
-      on:click|stopPropagation
-      on:keydown|stopPropagation
-    >
-      <button
-        class="close-button"
-        on:click={closeModal}
-        aria-label="Close modal">&times;</button
-      >
-      <h2>{title}</h2>
-      <ImageSlideshow {images} />
-      <p>{fullDescription}</p>
+<article class:feature-card={isFeature} class="card">
+  <button class="card-hit" type="button" onclick={onToggle} aria-expanded={expanded}>
+    <div class="image-wrap">
+      <PlaceholderImage
+        width={project.width}
+        height={project.height}
+        alt={project.title}
+        src={project.imageUrl}
+      />
+      <div class="hover-layer">
+        <p class="title">{project.title}</p>
+        <p>{project.description}</p>
+      </div>
     </div>
-  </div>
-{/if}
+  </button>
+
+  {#if expanded}
+    <div class="modal-backdrop" role="presentation" onclick={onToggle}>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={project.title}
+        tabindex="-1"
+        onclick={(event) => event.stopPropagation()}
+        onkeydown={(event) => {
+          if (event.key === "Escape") onToggle();
+        }}
+      >
+        <button class="close" type="button" onclick={closeModal} aria-label="Close">
+          x
+        </button>
+        <div class="modal-image">
+          <PlaceholderImage
+            width={project.width}
+            height={project.height}
+            alt={project.title}
+            src={project.imageUrl}
+          />
+        </div>
+        <div class="post">
+          <p class="meta">{project.category}</p>
+          <p class="post-title">{project.postTitle}</p>
+          {#if project.postMarkdownPath}
+            {#if markdownLoading}
+              <p class="md-status">Loading post...</p>
+            {:else if markdownError}
+              <p class="md-status">{markdownError}</p>
+            {:else}
+              <div class="md-content">
+                {@html markdownHtml}
+              </div>
+            {/if}
+          {:else}
+            <p>{project.postBody}</p>
+          {/if}
+          {#if project.liveUrl}
+            <a href={project.liveUrl} target="_blank" rel="noreferrer">View Live</a>
+          {/if}
+        </div>
+      </div>
+    </div>
+  {/if}
+</article>
 
 <style>
-  .project-card {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 16px;
-    margin: 16px;
-    text-align: center;
+  .card {
+    position: relative;
+    background: #fdfdfb;
+    overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 0;
+    height: 100%;
+    transition: background 0.15s ease;
+    --hover-title-size: clamp(1.35rem, 2.2vw, 2.35rem);
+    --hover-body-size: clamp(1.08rem, 1.45vw, 1.45rem);
   }
 
-  .project-card:hover {
-    transform: translateY(-5px);
+  .card.feature-card {
+    --hover-title-size: clamp(1.75rem, 3vw, 3.2rem);
+    --hover-body-size: clamp(1.25rem, 1.95vw, 2rem);
   }
 
-  .project-card .thumbnail {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-    margin-bottom: 10px;
+  .card:hover {
+    background: #f2f2ed;
   }
 
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
+  .card-hit {
+    all: unset;
+    display: block;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-
-  .modal-content {
-    background: var(--background-primary);
-    padding: 40px;
-    border-radius: var(--primary-radius);
-    max-width: 800px;
-    max-height: 80%;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .modal-content h2 {
-    margin-top: 0;
-  }
-
-  .modal-content p {
-    line-height: 1.6;
-    text-align: left;
-  }
-
-  .modal-content :global(.slideshow-container) {
-    width: 100%;
-  }
-
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
     cursor: pointer;
-    color: #333;
   }
 
-  @media (max-width: 768px) {
-    .project-card {
-      padding: 12px;
-      margin: 12px;
-    }
-
-    .modal-content {
-      padding: 30px;
-    }
+  .image-wrap {
+    position: relative;
+    height: 100%;
+    min-height: 0;
   }
 
-  @media (max-width: 480px) {
-    .project-card {
-      padding: 10px;
-      margin: 10px;
-    }
+  .image-wrap :global(img),
+  .image-wrap :global(.placeholder) {
+    transition: filter 0.22s ease;
+  }
 
-    .modal-content {
-      padding: 20px;
-      max-width: 95%; /* Allow modal to take more width on very small screens */
-    }
+  .image-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
 
-    .modal-content h2 {
-      font-size: 1.5rem; /* Adjust modal title size */
-    }
+  .card:hover .image-wrap::after {
+    opacity: 1;
+  }
 
-    .modal-content p {
-      font-size: 0.9rem; /* Adjust modal description size */
-    }
+  .card:hover .image-wrap :global(img),
+  .card:hover .image-wrap :global(.placeholder) {
+    filter: grayscale(1) brightness(0.86);
+  }
+
+  .hover-layer {
+    position: absolute;
+    inset: 0;
+    padding: 2.2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.9rem;
+    background: rgba(0, 0, 0, 0.36);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    z-index: 2;
+  }
+
+  .card:hover .hover-layer {
+    opacity: 1;
+  }
+
+  .title {
+    margin: 0 0 0.3rem;
+    font-size: var(--hover-title-size);
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.15;
+    max-width: 16ch;
+  }
+
+  .hover-layer p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: var(--hover-body-size);
+    line-height: 1.5;
+    max-width: 28ch;
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0, 0, 0, 0.24);
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+  }
+
+  .modal {
+    width: min(920px, 96vw);
+    max-height: 92vh;
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid #bdbdb6;
+    box-shadow: 0 14px 48px rgba(0, 0, 0, 0.14);
+    position: relative;
+  }
+
+  .close {
+    all: unset;
+    cursor: pointer;
+    position: sticky;
+    top: 0.5rem;
+    left: calc(100% - 2rem);
+    z-index: 2;
+    width: 1.5rem;
+    height: 1.5rem;
+    text-align: center;
+    line-height: 1.5rem;
+    color: rgba(17, 17, 17, 0.78);
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .modal-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .post {
+    padding: 1.5rem 1.6rem 1.7rem;
+    border-top: 1px solid #c8c8c2;
+    display: grid;
+    gap: 0.9rem;
+    background: #fff;
+  }
+
+  .meta {
+    margin: 0;
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(17, 17, 17, 0.5);
+  }
+
+  .post-title {
+    margin: 0;
+    color: #111;
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .post p {
+    margin: 0;
+    color: rgba(17, 17, 17, 0.83);
+    font-size: 1.2rem;
+    line-height: 1.58;
+  }
+
+  .md-status {
+    color: rgba(17, 17, 17, 0.62);
+  }
+
+  .md-content {
+    display: grid;
+    gap: 0.85rem;
+    color: rgba(17, 17, 17, 0.9);
+  }
+
+  .md-content :global(h1),
+  .md-content :global(h2),
+  .md-content :global(h3) {
+    margin: 0.5rem 0 0.1rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.22;
+  }
+
+  .md-content :global(p) {
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1.62;
+  }
+
+  .md-content :global(ul) {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.35rem;
+    font-size: 1.15rem;
+  }
+
+  .md-content :global(figure) {
+    margin: 0.25rem 0 0.4rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .md-content :global(figure img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid #c8c8c2;
+  }
+
+  .md-content :global(figcaption) {
+    font-size: 1rem;
+    color: rgba(17, 17, 17, 0.56);
+  }
+
+  .md-content :global(pre) {
+    margin: 0.2rem 0;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #d2d2cb;
+    background: #f3f3ef;
+    overflow: auto;
+  }
+
+  .md-content :global(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.85em;
+  }
+
+  a {
+    color: #0055cc;
+    text-decoration: none;
+    width: fit-content;
+    font-weight: 600;
+  }
+
+  a:hover {
+    text-decoration: underline;
   }
 </style>
