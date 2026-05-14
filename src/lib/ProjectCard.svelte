@@ -22,6 +22,8 @@
   let markdownHtml = $state("");
   let markdownLoading = $state(false);
   let markdownError = $state("");
+  const hasPostContent = $derived(Boolean(project.postTitle || project.postBody));
+  const hasLiveUrl = $derived(Boolean(project.liveUrl));
 
   $effect(() => {
     if (!expanded || !project.postMarkdownPath) return;
@@ -61,23 +63,74 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<article class:feature-card={isFeature} class="card">
-  <button class="card-hit" type="button" onclick={onToggle} aria-expanded={expanded}>
-    <div class="image-wrap">
-      <PlaceholderImage
-        width={project.width}
-        height={project.height}
-        alt={project.title}
-        src={project.imageUrl}
-      />
-      <div class="hover-layer">
-        <p class="title">{project.title}</p>
-        <p>{project.description}</p>
+<article
+  class:feature-card={isFeature}
+  class:modal-enabled={hasPostContent}
+  class:link-enabled={!hasPostContent && hasLiveUrl}
+  class="card"
+>
+  {#if hasPostContent}
+    <button class="card-hit" type="button" onclick={onToggle} aria-expanded={expanded}>
+      <div class="image-wrap">
+        <PlaceholderImage
+          width={project.width}
+          height={project.height}
+          alt={project.title}
+          src={project.imageUrl}
+        />
+        <div class="hover-layer">
+          <p class="hover-category">{project.category}</p>
+          <div class="hover-copy">
+            <p class="title">{project.title}</p>
+            <p>{project.description}</p>
+          </div>
+        </div>
+      </div>
+    </button>
+  {:else if hasLiveUrl}
+    <a class="card-hit card-link" href={project.liveUrl} target="_blank" rel="noreferrer">
+      <div class="image-wrap">
+        <span class="outbound-pill" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none" focusable="false">
+            <path d="M7 13L13 7M8 7H13V12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </span>
+        <PlaceholderImage
+          width={project.width}
+          height={project.height}
+          alt={project.title}
+          src={project.imageUrl}
+        />
+        <div class="hover-layer">
+          <p class="hover-category">{project.category}</p>
+          <div class="hover-copy">
+            <p class="title">{project.title}</p>
+            <p>{project.description}</p>
+          </div>
+        </div>
+      </div>
+    </a>
+  {:else}
+    <div class="card-hit card-static">
+      <div class="image-wrap">
+        <PlaceholderImage
+          width={project.width}
+          height={project.height}
+          alt={project.title}
+          src={project.imageUrl}
+        />
+        <div class="hover-layer">
+          <p class="hover-category">{project.category}</p>
+          <div class="hover-copy">
+            <p class="title">{project.title}</p>
+            <p>{project.description}</p>
+          </div>
+        </div>
       </div>
     </div>
-  </button>
+  {/if}
 
-  {#if expanded}
+  {#if expanded && hasPostContent}
     <div class="modal-backdrop" role="presentation" onclick={onToggle}>
       <div
         class="modal"
@@ -131,17 +184,17 @@
     position: relative;
     background: #fdfdfb;
     overflow: hidden;
-    cursor: pointer;
+    cursor: default;
     min-height: 0;
     height: 100%;
     transition: background 0.15s ease;
-    --hover-title-size: clamp(1.35rem, 2.2vw, 2.35rem);
-    --hover-body-size: clamp(1.08rem, 1.45vw, 1.45rem);
+    --hover-title-size: clamp(1rem, 1.4vw, 1.45rem);
+    --hover-body-size: clamp(0.78rem, 1.05vw, 0.95rem);
   }
 
-  .card.feature-card {
-    --hover-title-size: clamp(1.75rem, 3vw, 3.2rem);
-    --hover-body-size: clamp(1.25rem, 1.95vw, 2rem);
+  .card.modal-enabled,
+  .card.link-enabled {
+    cursor: pointer;
   }
 
   .card:hover {
@@ -153,7 +206,7 @@
     display: block;
     width: 100%;
     height: 100%;
-    cursor: pointer;
+    cursor: inherit;
   }
 
   .image-wrap {
@@ -193,7 +246,7 @@
     padding: 2.2rem 2rem;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.9rem;
     background: rgba(0, 0, 0, 0.36);
     opacity: 0;
@@ -201,8 +254,62 @@
     z-index: 2;
   }
 
+  .hover-category {
+    margin: 0;
+    width: fit-content;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .hover-copy {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .outbound-pill {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    z-index: 3;
+    width: 1rem;
+    height: 1rem;
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.96);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    pointer-events: none;
+  }
+
+  .outbound-pill svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+  }
+
+  .card.link-enabled:hover .outbound-pill {
+    opacity: 1;
+  }
+
   .card:hover .hover-layer {
     opacity: 1;
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .card .image-wrap::after {
+      opacity: 1;
+    }
+
+    .card .image-wrap :global(img),
+    .card .image-wrap :global(.placeholder) {
+      filter: grayscale(1) brightness(0.86);
+    }
+
+    .card .hover-layer {
+      opacity: 1;
+    }
   }
 
   .title {
@@ -214,7 +321,7 @@
     max-width: 16ch;
   }
 
-  .hover-layer p {
+  .hover-copy p:not(.title) {
     margin: 0;
     color: rgba(255, 255, 255, 0.95);
     font-size: var(--hover-body-size);

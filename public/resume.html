@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume — Matthieu Fuller</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      font-family: "Cormorant Garamond", "Iowan Old Style", "Times New Roman", serif;
+      overflow: hidden;
+    }
+
+    .scene {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1400px;
+      perspective-origin: 50% 50%;
+      user-select: none;
+    }
+
+    .card-wrapper {
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+      border-radius: 1px;
+      box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.13),
+        0 6px 20px rgba(0, 0, 0, 0.07);
+      transition:
+        transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        box-shadow 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .card-wrapper.tilting {
+      transition:
+        transform 0.08s linear,
+        box-shadow 0.08s linear;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 1px;
+      width: calc(84vh * (8.5 / 11));
+      height: 84vh;
+    }
+
+    .gloss {
+      position: absolute;
+      inset: 0;
+      border-radius: 1px;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(
+        circle at 50% 20%,
+        rgba(255, 255, 255, 0.22) 0%,
+        transparent 60%
+      );
+      transition: opacity 0.3s ease, background 0.08s linear;
+    }
+
+    .card-wrapper.tilting .gloss { opacity: 1; }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      background: #fafaf8;
+      border-radius: 1px;
+      overflow: hidden;
+      /* size matches the PDF proportions so no layout shift on load */
+      width: calc(84vh * (8.5 / 11));
+      height: 84vh;
+    }
+
+    /* shimmer sweep */
+    .loading::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.55) 50%,
+        transparent 70%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-page {
+      padding: 7% 8%;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      height: 100%;
+    }
+
+    /* shared bone style */
+    .bone {
+      border-radius: 2px;
+      background: #e4e4e0;
+      flex-shrink: 0;
+    }
+
+    .sk-name    { height: 2.6%; width: 55%; align-self: center; margin-bottom: 1.4%; }
+    .sk-contact { height: 1.1%; margin-bottom: 0.5%; align-self: center; }
+    .sk-rule    { height: 1px; background: #d8d8d4; margin: 2.2% 0 1.8%; }
+
+    .sk-section { height: 1.3%; width: 22%; margin-bottom: 1.8%; }
+
+    .sk-line    { height: 1%; margin-bottom: 1%; }
+    .sk-gap     { flex-shrink: 0; height: 2.4%; }
+
+    .sk-bullet-row {
+      display: flex;
+      align-items: center;
+      gap: 2%;
+      margin-bottom: 1%;
+    }
+    .sk-dot  { width: 1%; aspect-ratio: 1; border-radius: 50%; background: #e4e4e0; flex-shrink: 0; }
+    .sk-bline { height: 1%; flex: 1; border-radius: 2px; background: #e4e4e0; }
+
+    .corner-link {
+      position: fixed;
+      font-size: 0.75rem;
+      letter-spacing: 0.07em;
+      color: rgba(17, 17, 17, 0.38);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.18s;
+      z-index: 10;
+    }
+    .corner-link:hover { color: #111; }
+
+    .back-link {
+      top: 1.6rem;
+      left: 1.8rem;
+    }
+
+    .download-link {
+      top: 1.6rem;
+      right: 1.8rem;
+    }
+
+    .name-label {
+      position: fixed;
+      bottom: 1.6rem;
+      left: 1.8rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: rgba(17, 17, 17, 0.28);
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="corner-link back-link">← Back</a>
+  <a href="/resume.pdf" download class="corner-link download-link">Download ↓</a>
+  <span class="name-label">Matthieu Fuller</span>
+
+  <div class="scene" id="scene">
+    <div class="card-wrapper" id="card">
+      <canvas id="resume-canvas"></canvas>
+      <div class="gloss" id="gloss"></div>
+      <div class="loading" id="loading">
+        <div class="skeleton-page">
+          <!-- name -->
+          <div class="bone sk-name"></div>
+          <!-- contact line -->
+          <div class="bone sk-contact" style="width:42%"></div>
+          <div class="bone sk-contact" style="width:32%"></div>
+
+          <div class="sk-rule bone"></div>
+
+          <!-- education -->
+          <div class="bone sk-section"></div>
+          <div class="bone sk-line" style="width:88%"></div>
+          <div class="bone sk-line" style="width:74%"></div>
+          <div class="bone sk-line" style="width:81%"></div>
+
+          <div class="sk-gap"></div>
+
+          <!-- experience -->
+          <div class="bone sk-section" style="width:28%"></div>
+          <div class="bone sk-line" style="width:92%"></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:80%"></div></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:68%"></div></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:75%"></div></div>
+          <div class="bone sk-line" style="width:88%; margin-top:1.2%"></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:72%"></div></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:60%"></div></div>
+
+          <div class="sk-gap"></div>
+
+          <!-- projects -->
+          <div class="bone sk-section" style="width:18%"></div>
+          <div class="bone sk-line" style="width:85%"></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:78%"></div></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:64%"></div></div>
+          <div class="bone sk-line" style="width:82%; margin-top:1.2%"></div>
+          <div class="sk-bullet-row"><div class="sk-dot"></div><div class="sk-bline" style="max-width:70%"></div></div>
+
+          <div class="sk-gap"></div>
+
+          <!-- skills -->
+          <div class="bone sk-section" style="width:14%"></div>
+          <div class="bone sk-line" style="width:95%"></div>
+          <div class="bone sk-line" style="width:78%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+
+    const canvas  = document.getElementById('resume-canvas');
+    const ctx     = canvas.getContext('2d');
+    const loading = document.getElementById('loading');
+    const card    = document.getElementById('card');
+    const gloss   = document.getElementById('gloss');
+    const scene   = document.getElementById('scene');
+    const dpr     = window.devicePixelRatio || 1;
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    async function renderPDF() {
+      try {
+        const [pdf] = await Promise.all([
+          pdfjsLib.getDocument('/resume.pdf').promise,
+          delay(500),
+        ]);
+        const page = await pdf.getPage(1);
+
+        const maxH = window.innerHeight * 0.84;
+        const maxW = window.innerWidth  * 0.70;
+
+        const base     = page.getViewport({ scale: 1 });
+        const fitScale = Math.min(maxH / base.height, maxW / base.width);
+        const viewport = page.getViewport({ scale: fitScale * dpr });
+
+        canvas.width        = viewport.width;
+        canvas.height       = viewport.height;
+        canvas.style.width  = (viewport.width  / dpr) + 'px';
+        canvas.style.height = (viewport.height / dpr) + 'px';
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        loading.style.transition = 'opacity 0.4s ease';
+        loading.style.opacity = '0';
+        loading.addEventListener('transitionend', () => loading.remove(), { once: true });
+      } catch (err) {
+        loading.textContent = 'Could not load PDF.';
+        console.error(err);
+      }
+    }
+
+    renderPDF();
+
+    // --- tilt + zoom + drag state ---
+    const MAX_TILT    = 13;
+    const MIN_SCALE   = 1, MAX_SCALE = 1.5;
+    const SPRING_K    = 0.055;  // stiffness — how hard it pulls back
+    const SPRING_DAMP = 0.78;   // damping per frame — lower = more bounce
+
+    let hovering = false;
+    let raf = null;
+    let targetRX = 0,  targetRY = 0;
+    let currentRX = 0, currentRY = 0;
+    let targetScale = 1,  currentScale = 1;
+    let currentTX = 0, currentTY = 0;
+    let targetTX  = 0, targetTY  = 0;
+    let velTX = 0, velTY = 0;
+
+    // drag
+    let isDragging   = false;
+    let dragLastX    = 0, dragLastY    = 0;
+    let dragMouseVX  = 0, dragMouseVY  = 0;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function isZoomed() { return targetScale > MIN_SCALE; }
+
+    function tick() {
+      currentRX    = lerp(currentRX,    targetRX,    0.12);
+      currentRY    = lerp(currentRY,    targetRY,    0.12);
+      currentScale = lerp(currentScale, targetScale, 0.12);
+
+      if (isDragging) {
+        // position driven directly by mousemove; velocity tracked there
+        currentTX = lerp(currentTX, targetTX, 0.35);
+        currentTY = lerp(currentTY, targetTY, 0.35);
+      } else if (isZoomed()) {
+        // smooth pan settle
+        currentTX = lerp(currentTX, targetTX, 0.12);
+        currentTY = lerp(currentTY, targetTY, 0.12);
+        velTX = 0; velTY = 0;
+      } else {
+        // spring physics back to centre
+        velTX += -SPRING_K * currentTX;
+        velTY += -SPRING_K * currentTY;
+        velTX *= SPRING_DAMP;
+        velTY *= SPRING_DAMP;
+        currentTX += velTX;
+        currentTY += velTY;
+        targetTX = currentTX;
+        targetTY = currentTY;
+      }
+
+      const dist    = Math.sqrt((currentRX / MAX_TILT) ** 2 + (currentRY / MAX_TILT) ** 2);
+      const lift    = (hovering || isDragging) ? 1.025 : 1;
+      const shadowX = (currentRY / MAX_TILT) * 28;
+      const shadowY = (currentRX / MAX_TILT) * -20 + 36;
+      const blur    = 48 + dist * 24;
+      const opacity = 0.12 + dist * 0.06;
+
+      card.style.transform =
+        `translate(${currentTX}px, ${currentTY}px) ` +
+        `rotateX(${currentRX}deg) rotateY(${currentRY}deg) ` +
+        `scale(${currentScale * lift})`;
+      card.style.boxShadow =
+        `${shadowX}px ${shadowY}px ${blur}px rgba(0,0,0,${opacity}),` +
+        `0 6px 20px rgba(0,0,0,0.06)`;
+
+      const gx = ((currentRY / MAX_TILT + 1) / 2) * 100;
+      const gy = ((-currentRX / MAX_TILT + 1) / 2) * 100;
+      gloss.style.background =
+        `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.24) 0%, transparent 55%)`;
+
+      const txSettled = isZoomed()
+        ? Math.abs(currentTX - targetTX) < 0.05 && Math.abs(currentTY - targetTY) < 0.05
+        : Math.abs(currentTX) < 0.1 && Math.abs(currentTY) < 0.1 &&
+          Math.abs(velTX) < 0.01 && Math.abs(velTY) < 0.01;
+
+      const still =
+        !isDragging &&
+        txSettled &&
+        Math.abs(currentRX - targetRX)       < 0.01 &&
+        Math.abs(currentRY - targetRY)       < 0.01 &&
+        Math.abs(currentScale - targetScale) < 0.001;
+
+      raf = still ? null : requestAnimationFrame(tick);
+    }
+
+    function scheduleFrame() {
+      if (!raf) raf = requestAnimationFrame(tick);
+    }
+
+    // --- tilt on hover ---
+    scene.addEventListener('mousemove', (e) => {
+      if (!isDragging) {
+        const rect = card.getBoundingClientRect();
+        const cx   = rect.left + rect.width  / 2;
+        const cy   = rect.top  + rect.height / 2;
+        const dx   = Math.max(-1, Math.min(1, (e.clientX - cx) / (rect.width  / 2)));
+        const dy   = Math.max(-1, Math.min(1, (e.clientY - cy) / (rect.height / 2)));
+        targetRX = -dy * MAX_TILT;
+        targetRY =  dx * MAX_TILT;
+        hovering = true;
+        card.classList.add('tilting');
+      }
+      scheduleFrame();
+    });
+
+    scene.addEventListener('mouseleave', () => {
+      if (isDragging) return;
+      targetRX = 0; targetRY = 0;
+      hovering = false;
+      card.classList.remove('tilting');
+      scheduleFrame();
+    });
+
+    // --- drag ---
+    scene.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      isDragging  = true;
+      dragLastX   = e.clientX;
+      dragLastY   = e.clientY;
+      dragMouseVX = 0;
+      dragMouseVY = 0;
+      scene.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragLastX;
+      const dy = e.clientY - dragLastY;
+      dragMouseVX = dx;
+      dragMouseVY = dy;
+      dragLastX   = e.clientX;
+      dragLastY   = e.clientY;
+
+      targetTX += dx;
+      targetTY += dy;
+      scheduleFrame();
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      scene.style.cursor = '';
+
+      if (isZoomed()) {
+        // pan: stay put
+      } else {
+        // spring release: hand off drag velocity to physics
+        velTX = dragMouseVX;
+        velTY = dragMouseVY;
+      }
+      scheduleFrame();
+    });
+
+    // --- zoom ---
+    scene.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      const sr  = scene.getBoundingClientRect();
+      const mx  = e.clientX - (sr.left + sr.width  / 2);
+      const my  = e.clientY - (sr.top  + sr.height / 2);
+
+      const factor   = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, targetScale * factor));
+
+      if (newScale <= MIN_SCALE) {
+        targetTX = 0;
+        targetTY = 0;
+      } else {
+        const ratio = newScale / targetScale;
+        targetTX = mx - (mx - targetTX) * ratio;
+        targetTY = my - (my - targetTY) * ratio;
+      }
+
+      targetScale = newScale;
+      scheduleFrame();
+    }, { passive: false });
+  </script>
+</body>
+</html>
