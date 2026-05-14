@@ -73,7 +73,7 @@
       description: "Privacy-first custom ad-network",
       category: "Project",
       postTitle: "Privacy First Advertising is not an Oxymoron",
-      postBody: "A Q-Learning table evolves recommendations based on signals purely from general user engagement with the inventory and the parnter site itself, never based on individual user information.",
+      postBody: "A Q-Learning table evolves recommendations based on signals purely from general user engagement with the inventory and the partner site itself, never based on individual user information.",
       liveUrl: "",
       width: 1200,
       height: 900,
