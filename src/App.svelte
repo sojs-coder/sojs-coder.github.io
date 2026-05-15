@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import ProjectCard from "./lib/ProjectCard.svelte";
+    import Canvas from "./Canvas.svelte";
 
     const heroProjects = [
         {
@@ -50,7 +51,7 @@
         },
         {
             id: "hero-bottom-1",
-        title: "Sawjess",
+            title: "Sawjess",
             category: "Hackathon",
             description: "Sea-level rise prediction model and visualization.",
             liveUrl: "https://devpost.com/software/sawjess",
@@ -77,7 +78,8 @@
             id: "o1",
             title: "Bullish Forge",
             category: "Project",
-            description: "Ship social noise. Scrapes twitter, finds trends, build MVPs. (AI Slop Factory)",
+            description:
+                "Ship social noise. Scrapes twitter, finds trends, build MVPs. (AI Slop Factory)",
             width: 1200,
             height: 900,
             imageUrl: "/images/bullishforge.jpg",
@@ -238,6 +240,32 @@
     ontouchmove={dismissScrollHint}
 />
 
+<header>
+    <Canvas />
+    <div class="header-identity">
+        <span class="name">Matthieu Fuller</span>
+        <span class="header-desc"
+            >UCSD CS &amp; Math &middot; Building <a
+                href="https://signalor.app"
+                target="_blank"
+                rel="noreferrer">Signalor</a
+            > &middot; Engineer</span
+        >
+    </div>
+    <nav>
+        <a href="mailto:sojscoder@gmail.com">sojscoder@gmail.com</a>
+        <a
+            href="https://www.linkedin.com/in/matthieu-fuller"
+            target="_blank"
+            rel="noreferrer">LinkedIn</a
+        >
+        <a href="https://github.com/sojs-coder" target="_blank" rel="noreferrer"
+            >GitHub</a
+        >
+        <a href="/resume.html">Resume</a>
+    </nav>
+</header>
+
 <main>
     <section class="hero-grid">
         {#each heroProjects as project (project.id)}
@@ -274,31 +302,6 @@
         <span class="chevron"></span>
     </button>
 {/if}
-
-<footer>
-    <div class="footer-identity">
-        <span class="name">Matthieu Fuller</span>
-        <span class="footer-desc"
-            >UCSD CS &amp; Math &middot; Building <a
-                href="https://signalor.app"
-                target="_blank"
-                rel="noreferrer">Signalor</a
-            > &middot; Engineer</span
-        >
-    </div>
-    <nav>
-        <a href="mailto:sojscoder@gmail.com">sojscoder@gmail.com</a>
-        <a
-            href="https://www.linkedin.com/in/matthieu-fuller"
-            target="_blank"
-            rel="noreferrer">LinkedIn</a
-        >
-        <a href="https://github.com/sojs-coder" target="_blank" rel="noreferrer"
-            >GitHub</a
-        >
-        <a href="/resume.html">Resume</a>
-    </nav>
-</footer>
 
 <style>
     :global(*) {
@@ -346,21 +349,23 @@
     }
 
     main {
+        position: relative;
+        z-index: 1;
         width: 100%;
         margin: 0;
         padding: 0;
     }
 
-  .hero-grid,
-  .archive-grid {
-    width: 100%;
-    display: grid;
-    gap: 0;
-  }
+    .hero-grid,
+    .archive-grid {
+        width: 100%;
+        display: grid;
+        gap: 0;
+    }
 
-  .hero-grid {
-    height: 100vh;
-  }
+    .hero-grid {
+        height: 100vh;
+    }
 
     .hero-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -397,13 +402,15 @@
         grid-row: 3;
     }
 
-  .archive-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: none;
-    grid-auto-rows: minmax(33.333vh, auto);
-  }
+    .archive-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: none;
+        grid-auto-rows: minmax(33.333vh, auto);
+    }
 
-    footer {
+    header {
+        position: relative;
+        z-index: 1;
         display: grid;
         grid-template-columns: 1fr 1fr;
         align-items: end;
@@ -411,46 +418,50 @@
         padding: 4rem 2rem 3rem;
         border-top: 1px solid #c8c8c2;
         border-left: 1px solid #c8c8c2;
+        height: 100vh;
     }
 
-    .footer-identity {
+    
+    .header-identity {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        z-index: 1;
     }
 
-    footer .name {
+    header .name {
         font-size: 1.45rem;
         font-weight: 600;
         letter-spacing: 0.01em;
         color: #111;
     }
 
-    .footer-desc {
+    .header-desc {
         font-size: 0.85rem;
         letter-spacing: 0.02em;
         color: rgba(17, 17, 17, 0.5);
         line-height: 1.5;
     }
 
-    .footer-desc a {
+    .header-desc a {
         color: rgba(17, 17, 17, 0.7);
         text-decoration: underline;
         text-underline-offset: 2px;
     }
 
-    .footer-desc a:hover {
+    .header-desc a:hover {
         color: #111;
     }
 
-    footer nav {
+    header nav {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
         gap: 0.75rem;
+        z-index: 2;
     }
 
-    footer nav a {
+    header nav a {
         font-size: 0.85rem;
         letter-spacing: 0.04em;
         color: rgba(17, 17, 17, 0.55);
@@ -458,7 +469,7 @@
         transition: color 0.15s ease;
     }
 
-    footer nav a:hover {
+    header nav a:hover {
         color: #111;
     }
 
@@ -481,13 +492,13 @@
             min-height: 100vh;
         }
 
-        footer {
+        header {
             grid-template-columns: 1fr;
             gap: 1.8rem;
             padding: 2.4rem 1.2rem 2rem;
         }
 
-        footer nav {
+        header nav {
             align-items: flex-start;
         }
     }
