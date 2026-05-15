@@ -105,7 +105,7 @@
         },
         {
             id: "g1",
-            title: "Startub Incubator Website",
+            title: "Startup Incubator Website",
             description: "UCSD's startup scene, in website form.",
             category: "Work",
             liveUrl: "https://startupincubatorsd.com",
