@@ -62,18 +62,39 @@
         },
         {
             id: "hero-bottom-2",
+            title: "Ants",
+            description: "Pretty neat ant simulation",
+            category: "Project",
+            liveUrl: "https://sojs.dev/ants",
+            width: 1200,
+            height: 900,
+            slot: "bottomMid",
+            imageUrl: "/images/ants.png",
+        },
+ 
+    ];
+
+    const archiveProjects = [
+        {
+            id: "asdf",
+            title: "sojs.dev",
+            description: "This very website",
+            category: "Project",
+            liveUrl: "https://sojs.dev",
+            width: 1200,
+            height: 900,
+            imageUrl: "/images/sojs.png",
+        },
+        {
+            id: "hb-2",
             title: "AdHoc",
             description: "Privacy-first custom ad-network",
             category: "Project",
             liveUrl: "",
             width: 1200,
             height: 900,
-            slot: "bottomMid",
             imageUrl: "/images/adhoc.png",
         },
-    ];
-
-    const archiveProjects = [
         {
             id: "o1",
             title: "Bullish Forge",
