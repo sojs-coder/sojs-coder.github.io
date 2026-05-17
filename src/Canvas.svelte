@@ -6,7 +6,7 @@
     var WIDTH = $state(window.innerWidth);
     var HEIGHT = $state(window.innerHeight);
 
-    const BOID_COUNT = 220;
+    const BOID_COUNT = 500;
     const MIN_BOIDS = 80;
     const MAX_BOIDS = 1200;
     const DOT_SIZE = 3;
@@ -34,11 +34,15 @@
     const OCCUPIED_THRESHOLD = 0.45;
     const CROWD_LIMIT = 3.6;
 
-    const dots: Dot[] = [];
+    let dots = $state<Dot[]>([]);
     let lastFrame = 0;
     let frameCounter = 0;
+    let bufferedPopulation = $state(0);
     let temporalOccupancy: Float32Array = new Float32Array(0);
     let mouse = { x: 0, y: 0, active: false };
+    let nextDirsPool: [number, number][] = [];
+    let bucketsPool: (number[])[] = [];
+    let toRemoveIndices: number[] = [];
 
     onMount(() => {
         ctx = canvas.getContext("2d");
@@ -69,6 +73,10 @@
         lastFrame = now;
         frameCounter++;
 
+        if (frameCounter % 60 === 0) {
+            bufferedPopulation = dots.length;
+        }
+
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
         updateSimulation(deltaMs);
         drawDots();
@@ -76,11 +84,12 @@
     }
 
     function drawDots() {
-        dots.forEach((dot) => {
-            ctx!.fillStyle = "black";
+        ctx!.fillStyle = "black";
+        for (let i = 0; i < dots.length; i++) {
+            const dot = dots[i];
             ctx!.globalAlpha = dot.alpha;
             ctx!.fillRect(dot.x, dot.y, DOT_SIZE, DOT_SIZE);
-        });
+        }
         ctx!.globalAlpha = 1;
     }
 
@@ -101,8 +110,10 @@
     }
 
     function normalizeToUnit(v: [number, number], fallback: [number, number] = [1, 0]): [number, number] {
-        const mag = Math.hypot(v[0], v[1]);
-        if (mag === 0) return fallback;
+        const magSq = v[0] * v[0] + v[1] * v[1];
+        if (magSq === 0) return fallback;
+        if (magSq === 1) return v;
+        const mag = Math.sqrt(magSq);
         return [v[0] / mag, v[1] / mag];
     }
 
@@ -122,8 +133,11 @@
 
     function buildSpatialGrid(cellsX: number, cellsY: number) {
         const cellCount = cellsX * cellsY;
-        const buckets: number[][] = Array.from({ length: cellCount }, () => []);
+        const buckets: number[][] = bucketsPool;
         const occupancy = new Float32Array(cellCount);
+
+        for (let i = 0; i < buckets.length; i++) buckets[i].length = 0;
+        while (buckets.length < cellCount) buckets.push([]);
 
         for (let i = 0; i < dots.length; i++) {
             const dot = dots[i];
@@ -140,8 +154,9 @@
 
     function rotateTowards(current: [number, number], target: [number, number], maxAngle: number): [number, number] {
         const dot = Math.max(-1, Math.min(1, current[0] * target[0] + current[1] * target[1]));
+        if (dot >= Math.cos(maxAngle)) return target;
         const angle = Math.acos(dot);
-        if (angle <= maxAngle || angle === 0) return target;
+        if (angle === 0) return target;
         const t = maxAngle / angle;
         return normalizeToUnit([
             current[0] + (target[0] - current[0]) * t,
@@ -263,10 +278,10 @@
             }
         }
 
-        const sortedCull = Array.from(toCullIndices).sort((a, b) => b - a);
-        for (const index of sortedCull) {
+        const cullArr = Array.from(toCullIndices).sort((a, b) => b - a);
+        for (let i = 0; i < cullArr.length; i++) {
             if (dots.length <= MIN_BOIDS) break;
-            markDotDying(index);
+            markDotDying(cullArr[i]);
         }
 
         for (const spawn of toSpawn) {
@@ -277,7 +292,8 @@
 
     function updateSimulation(deltaMs: number) {
         const deltaNorm = deltaMs / 16.666;
-        const nextDirs: [number, number][] = new Array(dots.length);
+        const nextDirs = nextDirsPool;
+        nextDirs.length = dots.length;
         const vrSq = VISUAL_RANGE * VISUAL_RANGE;
         const srSq = SEPARATION_RANGE * SEPARATION_RANGE;
         const { cellsX, cellsY, count } = getGridShape();
@@ -345,19 +361,21 @@
                 coherence = normalizeToUnit([cohX / count, cohY / count], [0, 0]);
                 separation = normalizeToUnit([sepX, sepY], [0, 0]);
             }
-            const edgeAvoidance = normalizeToUnit([
-                dot.x < EDGE_MARGIN ? (EDGE_MARGIN - dot.x) / EDGE_MARGIN : dot.x > WIDTH - EDGE_MARGIN ? -(dot.x - (WIDTH - EDGE_MARGIN)) / EDGE_MARGIN : 0,
-                dot.y < EDGE_MARGIN ? (EDGE_MARGIN - dot.y) / EDGE_MARGIN : dot.y > HEIGHT - EDGE_MARGIN ? -(dot.y - (HEIGHT - EDGE_MARGIN)) / EDGE_MARGIN : 0
-            ], [0, 0]);
+            let edgeX = 0, edgeY = 0;
+            if (dot.x < EDGE_MARGIN) edgeX = (EDGE_MARGIN - dot.x) / EDGE_MARGIN;
+            else if (dot.x > WIDTH - EDGE_MARGIN) edgeX = -(dot.x - (WIDTH - EDGE_MARGIN)) / EDGE_MARGIN;
+            if (dot.y < EDGE_MARGIN) edgeY = (EDGE_MARGIN - dot.y) / EDGE_MARGIN;
+            else if (dot.y > HEIGHT - EDGE_MARGIN) edgeY = -(dot.y - (HEIGHT - EDGE_MARGIN)) / EDGE_MARGIN;
+            const edgeAvoidance = normalizeToUnit([edgeX, edgeY], [0, 0]);
             let mouseTend: [number, number] = [0, 0];
             if (mouse.active) {
                 const mdx = mouse.x - dot.x;
                 const mdy = mouse.y - dot.y;
+                const mrSq = MOUSE_TEND_RANGE * MOUSE_TEND_RANGE;
                 const md2 = mdx * mdx + mdy * mdy;
-                if (md2 > 0 && md2 < MOUSE_TEND_RANGE * MOUSE_TEND_RANGE) {
+                if (md2 > 0 && md2 < mrSq) {
                     const md = Math.sqrt(md2);
-                    const falloff = 1 - md / MOUSE_TEND_RANGE;
-                    mouseTend = [(mdx / md) * falloff, (mdy / md) * falloff];
+                    mouseTend = [(mdx / md) * (1 - md / MOUSE_TEND_RANGE), (mdy / md) * (1 - md / MOUSE_TEND_RANGE)];
                 }
             }
 
@@ -408,10 +426,14 @@
             }
         }
 
-        for (let i = dots.length - 1; i >= 0; i--) {
+        toRemoveIndices.length = 0;
+        for (let i = 0; i < dots.length; i++) {
             if (dots[i].alpha <= 0.01 && dots[i].dying) {
-                dots.splice(i, 1);
+                toRemoveIndices.push(i);
             }
+        }
+        for (let i = toRemoveIndices.length - 1; i >= 0; i--) {
+            dots.splice(toRemoveIndices[i], 1);
         }
 
         applyLifeRules(cellsX, cellsY, buckets);
@@ -441,6 +463,7 @@
 </script>
 
 <canvas bind:this={canvas} width={WIDTH} height={HEIGHT}></canvas>
+<div class="boid-counter">{bufferedPopulation}</div>
 
 <style>
     canvas {
@@ -449,5 +472,18 @@
         left: 0px;
         z-index: 0; /* above body background */
         pointer-events: none; /* never block scroll or clicks */
+    }
+
+    .boid-counter {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        font-size: 24px;
+        font-weight: 300;
+        color: black;
+        opacity: 0.35;
+        pointer-events: none;
+        font-family: monospace;
+        z-index: 1;
     }
 </style>
