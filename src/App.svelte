@@ -29,14 +29,14 @@
         },
         {
             id: "hero-right-2",
-            title: "Forge Engine",
-            description: "From-scratch HTML Game Engine",
-            category: "Internal Tool",
-            liveUrl: "https://forge.sojs.dev",
+            title: "COMBATOS",
+            description: "End-to-end drone signal-denied automation software.",
+            category: "Hackathon",
+            liveUrl: "https://devpost.com/software/outcast-virus",
             width: 1200,
             height: 900,
             slot: "rightMid",
-            imageUrl: "/images/forge.png",
+            imageUrl: "/images/combatos.png",
         },
         {
             id: "hero-corner",
@@ -75,6 +75,17 @@
     ];
 
     const archiveProjects = [
+        {
+            id: "hr-2",
+            title: "Forge Engine",
+            description: "From-scratch HTML Game Engine",
+            category: "Internal Tool",
+            liveUrl: "https://forge.sojs.dev",
+            width: 1200,
+            height: 900,
+            slot: "rightMid",
+            imageUrl: "/images/forge.png",
+        },
         {
             id: "asdf",
             title: "sojs.dev",
@@ -220,6 +231,7 @@
     let expandedId = $state(null);
     let showScrollHint = $state(false);
     let hasScrolled = $state(false);
+    let heroGrid = $state(null);
 
     function toggle(id) {
         expandedId = expandedId === id ? null : id;
@@ -233,8 +245,15 @@
     }
 
     function scrollDownFromHint() {
-        dismissScrollHint();
-        window.scrollBy({ top: window.innerHeight * 0.9, behavior: "smooth" });
+        hasScrolled = true;
+        showScrollHint = false;
+
+        if (heroGrid) {
+            heroGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+        }
+
+        window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
     }
 
     onMount(() => {
@@ -288,7 +307,7 @@
 </header>
 
 <main>
-    <section class="hero-grid">
+    <section class="hero-grid" bind:this={heroGrid}>
         {#each heroProjects as project (project.id)}
             <div class={`slot ${project.slot}`}>
                 <ProjectCard
