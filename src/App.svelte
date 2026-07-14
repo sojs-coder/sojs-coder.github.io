@@ -76,6 +76,17 @@
 
     const archiveProjects = [
         {
+            id: "rgtw4r3e",
+            title: "WorldVis",
+            description: "Timeline of all the worlds events",
+            category: "Project",
+            liveUrl: "https://worldvis.sojs.dev",
+            width: 1200,
+            height: 900,
+            slot: "rightMid",
+            imageUrl: "/images/worldvis.png",
+        },
+        {
             id: "hr-2",
             title: "Forge Engine",
             description: "From-scratch HTML Game Engine",
