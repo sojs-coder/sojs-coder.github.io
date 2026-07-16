@@ -18,13 +18,14 @@
 
     section {
         height: 100vh;
+        height: 100dvh;
         scroll-snap-align: start;
         position: relative;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 2rem;
+        padding: 2rem 1.25rem;
         border-top: 1px solid #c8c8c2;
     }
 
@@ -62,7 +63,9 @@
     .intro .links {
         margin-top: 2.5rem;
         display: flex;
-        gap: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.25rem 2rem;
     }
 
     .intro .links a,
@@ -232,7 +235,9 @@
     .why .cta {
         margin-top: 3rem;
         display: flex;
-        gap: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.25rem 2rem;
     }
 
     footer {
@@ -245,7 +250,15 @@
 
     @media (max-width: 700px) {
         .card { width: 260px; height: 185px; }
-        .stage { perspective: 900px; }
+        .stage { perspective: 900px; height: 38vh; }
+        .caption { height: 10rem; }
+        section { padding: 1.5rem 1rem; }
+        .nav button { width: 2.1rem; height: 2.1rem; }
+    }
+
+    @media (max-width: 420px) {
+        .card { width: 210px; height: 150px; }
+        .intro .links, .why .cta { gap: 1rem 1.25rem; }
     }
 </style>
 </head>
@@ -304,14 +317,14 @@
 
 <script>
     const projects = [
-        { title: "Signalor", desc: "Full-stack financial analysis platform: design, frontend, and backend, leading a team of 3.", url: "https://signalor.app/", img: "public/images/signalor.png" },
-        { title: "WorldVis", desc: "Interactive timeline of world events, a data-heavy UI kept fast and legible.", url: "https://worldvis.sojs.dev", img: "public/images/worldvis.png" },
-        { title: "sojs.dev", desc: "My portfolio, designed and built from scratch.", url: "https://sojs.dev", img: "public/images/sojs.png" },
-        { title: "AdHoc", desc: "Publisher dashboard and embed tooling for a privacy-first ad network.", url: "", img: "public/images/adhoc.png" },
-        { title: "Startup Incubator Website", desc: "Full website for UCSD's Startup Incubator, design through launch", url: "https://startupincubatorsd.com", img: "public/images/startupincubatorsd.png" },
-        { title: "Triton Trading Group", desc: "Client website for UCSD's trading organization, design to launch, leading of 4", url: "https://tritontradinggroup.org", img: "public/images/tritontradinggroup.png" },
-        { title: "WorldHacks", desc: "Landing page design and build for WorldHacks.", url: "https://worldhacks.xyz", img: "public/images/worldhacks.png" },
-        { title: "Ghost Device", desc: "Marketing site for a geospatial security startup.", url: "https://ghostdevice.xyz", img: "public/images/ghostdevice.png" },
+        { title: "Signalor", desc: "Full-stack financial analysis platform: design, frontend, and backend, leading a team of 3.", url: "https://signalor.app/", img: "images/signalor.png" },
+        { title: "WorldVis", desc: "Interactive timeline of world events, a data-heavy UI kept fast and legible.", url: "https://worldvis.sojs.dev", img: "images/worldvis.png" },
+        { title: "sojs.dev", desc: "My portfolio, designed and built from scratch.", url: "https://sojs.dev", img: "images/sojs.png" },
+        { title: "AdHoc", desc: "Publisher dashboard and embed tooling for a privacy-first ad network.", url: "", img: "images/adhoc.png" },
+        { title: "Startup Incubator Website", desc: "Full website for UCSD's Startup Incubator, design through launch", url: "https://startupincubatorsd.com", img: "images/startupincubatorsd.png" },
+        { title: "Triton Trading Group", desc: "Client website for UCSD's trading organization, design to launch, leading of 4", url: "https://tritontradinggroup.org", img: "images/tritontradinggroup.png" },
+        { title: "WorldHacks", desc: "Landing page design and build for WorldHacks.", url: "https://worldhacks.xyz", img: "images/worldhacks.png" },
+        { title: "Ghost Device", desc: "Marketing site for a geospatial security startup.", url: "https://ghostdevice.xyz", img: "images/ghostdevice.png" },
     ];
 
     const stage = document.getElementById("stage");
@@ -389,13 +402,26 @@
     render();
 
     // mailto links: hover shows "click to copy", click copies instead of opening mail app
-    document.querySelectorAll('a[href^="mailto:"]').forEach((a) => {
-        const original = a.textContent;
-        const email = a.getAttribute("href").slice(7);
-        // lock width to the widest label so the swap causes no layout shift
+    const mailtoLinks = [...document.querySelectorAll('a[href^="mailto:"]')].map((a) => {
         a.style.display = "inline-block";
         a.style.textAlign = "center";
-        a.style.width = a.offsetWidth + "px";
+        return { a, original: a.textContent, email: a.getAttribute("href").slice(7) };
+    });
+
+    // lock width to the widest label so the swap causes no layout shift; re-measure on resize
+    function lockMailtoWidths() {
+        mailtoLinks.forEach(({ a, original }) => {
+            a.style.width = "auto";
+            a.textContent = "click to copy";
+            const w = Math.max(a.offsetWidth, 0);
+            a.textContent = original;
+            a.style.width = Math.max(w, a.offsetWidth) + "px";
+        });
+    }
+    lockMailtoWidths();
+    window.addEventListener("resize", lockMailtoWidths);
+
+    mailtoLinks.forEach(({ a, original, email }) => {
         a.addEventListener("mouseenter", () => { a.textContent = "click to copy"; });
         a.addEventListener("mouseleave", () => { a.textContent = original; });
         a.addEventListener("click", (e) => {
