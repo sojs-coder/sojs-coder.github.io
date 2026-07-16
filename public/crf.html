@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Matthieu Fuller — Web Developer for CRF</title>
+<style>
+    * { box-sizing: border-box; margin: 0; }
+
+    html { scroll-snap-type: y mandatory; }
+
+    body {
+        background: #f6f6f3;
+        color: #111;
+        font-family: "Cormorant Garamond", "Iowan Old Style", "Times New Roman", serif;
+        overflow-x: hidden;
+    }
+
+    section {
+        height: 100vh;
+        scroll-snap-align: start;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        border-top: 1px solid #c8c8c2;
+    }
+
+    .kicker {
+        font-size: 0.8rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 17, 0.45);
+        margin-bottom: 1.5rem;
+    }
+
+    /* ---------- Slide 1: intro ---------- */
+    .intro h1 {
+        font-size: clamp(2.4rem, 6vw, 5rem);
+        font-weight: 500;
+        line-height: 1.1;
+        text-align: center;
+        max-width: 18ch;
+    }
+
+    .intro h1 em {
+        font-style: italic;
+        border-bottom: 2px solid #111;
+    }
+
+    .intro .sub {
+        margin-top: 2rem;
+        font-size: 1.05rem;
+        color: rgba(17, 17, 17, 0.55);
+        text-align: center;
+        max-width: 48ch;
+        line-height: 1.6;
+    }
+
+    .intro .links {
+        margin-top: 2.5rem;
+        display: flex;
+        gap: 2rem;
+    }
+
+    .intro .links a,
+    .why a {
+        font-size: 0.85rem;
+        letter-spacing: 0.04em;
+        color: rgba(17, 17, 17, 0.55);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(17, 17, 17, 0.25);
+        padding-bottom: 2px;
+        transition: color 0.15s ease;
+    }
+
+    .intro .links a:hover,
+    .why a:hover { color: #111; }
+
+    .scroll-cue {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 17, 0.35);
+        animation: bob 1.8s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50% { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ---------- Slide 2: 3D carousel ---------- */
+    .works { overflow: hidden; }
+
+    .stage {
+        perspective: 1600px;
+        width: 100%;
+        height: 46vh;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .card {
+        position: absolute;
+        width: 340px;
+        height: 240px;
+        background: #fff;
+        border: 1px solid #c8c8c2;
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+            transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.7s ease;
+    }
+
+    .card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: saturate(0.85);
+        transition: filter 0.3s ease;
+    }
+
+    .card:hover img { filter: saturate(1); }
+
+    .card.front:hover { --s: 1.06; }
+
+    .caption {
+        margin-top: 2rem;
+        text-align: center;
+        height: 8.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .caption .title {
+        font-size: 1.8rem;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    .caption .desc {
+        margin-top: 0.4rem;
+        font-size: 1rem;
+        color: rgba(17, 17, 17, 0.55);
+        max-width: 52ch;
+    }
+
+    .caption .visit {
+        display: inline-block;
+        margin-top: 0.6rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 17, 0.55);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(17, 17, 17, 0.25);
+    }
+
+    .caption .visit:hover { color: #111; }
+
+    .nav {
+        margin-top: 1.2rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .nav button {
+        all: unset;
+        cursor: pointer;
+        width: 2.4rem;
+        height: 2.4rem;
+        border: 1px solid #c8c8c2;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        color: rgba(17, 17, 17, 0.6);
+        transition: all 0.15s ease;
+        user-select: none;
+    }
+
+    .nav button:hover {
+        color: #111;
+        border-color: #111;
+    }
+
+    .nav .count {
+        font-size: 0.8rem;
+        letter-spacing: 0.15em;
+        color: rgba(17, 17, 17, 0.4);
+        min-width: 3.5rem;
+        text-align: center;
+    }
+
+    /* ---------- Slide 3: why ---------- */
+    .why .statement {
+        font-size: clamp(1.4rem, 3vw, 2.2rem);
+        font-weight: 400;
+        line-height: 1.5;
+        max-width: 34ch;
+        text-align: center;
+    }
+
+    .why .statement strong {
+        font-weight: 600;
+        font-style: italic;
+    }
+
+    .why .closer {
+        margin-top: 2.5rem;
+        font-size: 1.05rem;
+        color: rgba(17, 17, 17, 0.55);
+        max-width: 50ch;
+        text-align: center;
+        line-height: 1.6;
+    }
+
+    .why .cta {
+        margin-top: 3rem;
+        display: flex;
+        gap: 2rem;
+    }
+
+    footer {
+        position: absolute;
+        bottom: 1.5rem;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        color: rgba(17, 17, 17, 0.35);
+    }
+
+    @media (max-width: 700px) {
+        .card { width: 260px; height: 185px; }
+        .stage { perspective: 900px; }
+    }
+</style>
+</head>
+<body>
+
+<section class="intro">
+    <p class="kicker">A web developer application</p>
+    <h1>I am Matthieu Fuller, and I want to be the <em>Cancer Research Foundation's</em> web developer.</h1>
+    <p class="sub">
+        I study Computer Science &amp; Mathematics at UCSD, and I've spent years
+        building fast and responsive websites for real clients: startups, student organizations, and
+        companies. 
+    </p>
+    <div class="links">
+        <a href="https://matthieufuller.com">matthieufuller.com</a>
+        <a href="mailto:matthieufuller@gmail.com">matthieufuller@gmail.com</a>
+        <a href="https://www.linkedin.com/in/matthieu-fuller">LinkedIn</a>
+        <a href="https://sojs.dev/resume.html">Resume</a>
+    </div>
+    <div class="scroll-cue">Scroll</div>
+</section>
+
+<section class="works">
+    <p class="kicker">Selected web work</p>
+    <div class="stage" id="stage"></div>
+    <div class="caption">
+        <div class="title" id="capTitle"></div>
+        <div class="desc" id="capDesc"></div>
+        <a class="visit" id="capLink" target="_blank" rel="noreferrer">Visit site →</a>
+    </div>
+    <div class="nav">
+        <button id="prev" aria-label="Previous">←</button>
+        <span class="count" id="count"></span>
+        <button id="next" aria-label="Next">→</button>
+    </div>
+</section>
+
+<section class="why">
+    <p class="kicker">Why CRF</p>
+    <p class="statement">
+        Much of my previous work has centered around brilliant visionaries who
+        believe their startup to be the next big thing. They build for themselves.
+        <strong>The CRF does its work for the good of all humankind.</strong>
+    </p>
+    <p class="closer">
+        That is a vision I can get behind. That is a vision I would be proud to be
+        a part of.
+    </p>
+    <div class="cta">
+        <a href="mailto:matthieufuller@gmail.com">matthieufuller@gmail.com</a>
+        <a href="https://sojs.dev">Full portfolio</a>
+        <a href="mailto:8583585754">(858) 358-5754</a>
+    </div>
+    <footer>Matthieu Fuller · 2026</footer>
+</section>
+
+<script>
+    const projects = [
+        { title: "Signalor", desc: "Full-stack financial analysis platform: design, frontend, and backend, leading a team of 3.", url: "https://signalor.app/", img: "public/images/signalor.png" },
+        { title: "WorldVis", desc: "Interactive timeline of world events, a data-heavy UI kept fast and legible.", url: "https://worldvis.sojs.dev", img: "public/images/worldvis.png" },
+        { title: "sojs.dev", desc: "My portfolio, designed and built from scratch.", url: "https://sojs.dev", img: "public/images/sojs.png" },
+        { title: "AdHoc", desc: "Publisher dashboard and embed tooling for a privacy-first ad network.", url: "", img: "public/images/adhoc.png" },
+        { title: "Startup Incubator Website", desc: "Full website for UCSD's Startup Incubator, design through launch", url: "https://startupincubatorsd.com", img: "public/images/startupincubatorsd.png" },
+        { title: "Triton Trading Group", desc: "Client website for UCSD's trading organization, design to launch, leading of 4", url: "https://tritontradinggroup.org", img: "public/images/tritontradinggroup.png" },
+        { title: "WorldHacks", desc: "Landing page design and build for WorldHacks.", url: "https://worldhacks.xyz", img: "public/images/worldhacks.png" },
+        { title: "Ghost Device", desc: "Marketing site for a geospatial security startup.", url: "https://ghostdevice.xyz", img: "public/images/ghostdevice.png" },
+    ];
+
+    const stage = document.getElementById("stage");
+    const n = projects.length;
+    const mod = (a, b) => ((a % b) + b) % b;
+    let index = 0;
+
+    const cards = projects.map((p, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<img src="${p.img}" alt="${p.title}" />`;
+        card.addEventListener("click", () => {
+            const offset = shortest(i);
+            if (offset === 0) { if (p.url) window.open(p.url, "_blank"); }
+            else { index += offset; render(); }
+        });
+        stage.appendChild(card);
+        return card;
+    });
+
+    // signed shortest distance from current front card to card i
+    function shortest(i) {
+        let diff = mod(i - mod(index, n), n);
+        if (diff > n / 2) diff -= n;
+        return diff;
+    }
+
+    function render() {
+        const narrow = window.innerWidth <= 700;
+        const spacing = narrow ? 150 : 260; // px between neighboring cards
+        const maxVisible = narrow ? 1 : 2;  // cards shown on each side
+
+        cards.forEach((card, i) => {
+            const o = shortest(i);
+            const abs = Math.abs(o);
+            const hidden = abs > maxVisible;
+            card.classList.toggle("front", o === 0);
+            card.style.transform =
+                `translateX(${o * spacing}px)` +
+                ` translateZ(${-abs * 180}px)` +
+                ` rotateY(${narrow ? 0 : -o * 28}deg)` +
+                ` scale(var(--s, 1))`;
+            card.style.opacity = hidden ? 0 : 1 - abs * 0.25;
+            card.style.pointerEvents = hidden ? "none" : "auto";
+            card.style.zIndex = n - abs;
+        });
+
+        const p = projects[mod(index, n)];
+        document.getElementById("capTitle").textContent = p.title;
+        document.getElementById("capDesc").textContent = p.desc;
+        const link = document.getElementById("capLink");
+        link.href = p.url || "#";
+        link.style.visibility = p.url ? "visible" : "hidden";
+        document.getElementById("count").textContent = `${mod(index, n) + 1} / ${n}`;
+    }
+
+    document.getElementById("prev").addEventListener("click", () => { index--; render(); restartAuto(); });
+    document.getElementById("next").addEventListener("click", () => { index++; render(); restartAuto(); });
+    window.addEventListener("resize", render);
+
+    // auto-advance every 3s; pause while hovering, restart after manual nav
+    let auto = setInterval(() => { index++; render(); }, 3000);
+    function restartAuto() {
+        clearInterval(auto);
+        auto = setInterval(() => { index++; render(); }, 3000);
+    }
+    stage.addEventListener("mouseenter", () => clearInterval(auto));
+    stage.addEventListener("mouseleave", restartAuto);
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") { index--; render(); }
+        if (e.key === "ArrowRight") { index++; render(); }
+    });
+
+    render();
+
+    // mailto links: hover shows "click to copy", click copies instead of opening mail app
+    document.querySelectorAll('a[href^="mailto:"]').forEach((a) => {
+        const original = a.textContent;
+        const email = a.getAttribute("href").slice(7);
+        // lock width to the widest label so the swap causes no layout shift
+        a.style.display = "inline-block";
+        a.style.textAlign = "center";
+        a.style.width = a.offsetWidth + "px";
+        a.addEventListener("mouseenter", () => { a.textContent = "click to copy"; });
+        a.addEventListener("mouseleave", () => { a.textContent = original; });
+        a.addEventListener("click", (e) => {
+            e.preventDefault();
+            navigator.clipboard.writeText(email);
+            a.textContent = "copied!";
+        });
+    });
+</script>
+</body>
+</html>
