@@ -41,7 +41,7 @@
     .intro h1 {
         font-size: clamp(2.4rem, 6vw, 5rem);
         font-weight: 500;
-        line-height: 1.1;
+        line-height: 1.35;
         text-align: center;
         max-width: 18ch;
     }
@@ -49,6 +49,9 @@
     .intro h1 em {
         font-style: italic;
         border-bottom: 2px solid #111;
+        padding-bottom: 0.08em;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
     }
 
     .intro .sub {
@@ -194,6 +197,7 @@
         color: rgba(17, 17, 17, 0.6);
         transition: all 0.15s ease;
         user-select: none;
+        touch-action: manipulation;
     }
 
     .nav button:hover {
@@ -381,8 +385,13 @@
         document.getElementById("count").textContent = `${mod(index, n) + 1} / ${n}`;
     }
 
-    document.getElementById("prev").addEventListener("click", () => { index--; render(); restartAuto(); });
-    document.getElementById("next").addEventListener("click", () => { index++; render(); restartAuto(); });
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    prevBtn.addEventListener("click", () => { index--; render(); restartAuto(); });
+    nextBtn.addEventListener("click", () => { index++; render(); restartAuto(); });
+    // rapid clicks get misread as a double-click-to-zoom gesture in Chrome/Safari; block it
+    prevBtn.addEventListener("dblclick", (e) => e.preventDefault());
+    nextBtn.addEventListener("dblclick", (e) => e.preventDefault());
     window.addEventListener("resize", render);
 
     // auto-advance every 3s; pause while hovering, restart after manual nav
