@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Matthieu Fuller</title>
+<style>
+  html, body { background: #07070a; margin: 0; }
+  body { color: #d8d8cf; font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+  /* JS off: this plain document is the site. JS on: it goes sr-only, canvas takes over. */
+  #doc { max-width: 68ch; margin: 0 auto; padding: 4rem 1.5rem; line-height: 1.6; }
+  #doc img { max-width: 100%; height: auto; }
+  #doc a { color: inherit; }
+
+  .js #doc {
+    position: absolute; width: 1px; height: 1px;
+    margin: -1px; padding: 0; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .js #doc a:focus { position: fixed; top: 0; left: 0; width: auto; height: auto; clip-path: none; z-index: 2; background: #000; padding: .5rem; }
+
+  #spacer { display: none; }
+  #screen { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; }
+  .js #spacer, .js #screen { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="screen" aria-hidden="true"></canvas>
+<div id="spacer"></div>
+
+<main id="doc">
+  <h1>Matthieu Fuller</h1>
+  <p>Software engineer. Machines got complicated. Here are some I made anyway.</p>
+
+  <article>
+    <h2>Signalor</h2>
+    <img src="/images/signalor.png" alt="The Signalor market analysis dashboard" width="1920" height="1280" />
+    <p>Redefining the breadth of market analysis investors can perform.</p>
+    <ul><li>Featured — <a href="https://signalor.app/">signalor.app</a></li></ul>
+  </article>
+
+  <article>
+    <h2>CCPorted</h2>
+    <img src="/images/ccported.png" alt="The CCPorted game library" width="1200" height="900" />
+    <p>Play video games.</p>
+    <ul><li>Featured — <a href="https://ccported.web.app">ccported.web.app</a></li></ul>
+  </article>
+
+  <article>
+    <h2>COMBATOS</h2>
+    <img src="/images/combatos.png" alt="COMBATOS drone control software" width="1200" height="900" />
+    <p>End-to-end drone automation for signal-denied environments.</p>
+    <ul><li>Hackathon — <a href="https://devpost.com/software/outcast-virus">devpost.com</a></li></ul>
+  </article>
+
+  <article>
+    <h2>Ants</h2>
+    <img src="/images/ants.png" alt="An ant colony simulation" width="1200" height="900" />
+    <p>Pretty neat ant simulation.</p>
+    <ul><li>Project — <a href="https://sojs.dev/ants">sojs.dev/ants</a></li></ul>
+  </article>
+</main>
+
+<script type="module">
+document.documentElement.classList.add('js');
+
+// Density ramp: index == how much ink the glyph puts on the cell.
+const RAMP = " .'`^\",:;Il!i~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+const MONO = 'ui-monospace, Menlo, Consolas, monospace';   // one family everywhere — the
+const FONT_PX = 9;                  // resolved text must not look like a different typeface
+const SS = 3;                       // raster supersampling — one-time cost, big quality win
+const BG = '#07070a';
+
+const canvas = document.getElementById('screen');
+const ctx = canvas.getContext('2d', { alpha: false });
+const spacer = document.getElementById('spacer');
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const font = s => `${s.w ? s.w + ' ' : ''}${s.px}px ${s.f}`;
+
+let cw, lh, sx, cols, rows, lum, docRows, ditherC, ditherR, ops, units;
+let focus = null, shown = null, amt = 0;   // hovered unit, unit being drawn, resolve 0..1
+
+// A "unit" is the smallest thing that can resolve: one sentence, one whole link, one image.
+function tokensOf(el, upper) {
+  const out = [];
+  for (const n of el.childNodes) {
+    const link = n.nodeType === 1 && n.tagName === 'A' ? n : null;
+    for (const w of n.textContent.split(/\s+/)) if (w) out.push({ w: upper ? w.toUpperCase() : w, link });
+  }
+  return out;
+}
+
+// --- Lay the real DOM out into a raster where 1 pixel == 1 glyph cell -------
+function rasterize() {
+  sx = lh / cw;                       // cells are taller than wide; pre-stretch to compensate
+  const W = cols / sx;                // logical width, in raster units
+  const pad = W * 0.05;
+  ops = []; units = new Map();
+  let y = 4;
+
+  const probe = document.createElement('canvas').getContext('2d');
+  const H1 = { px: Math.max(9, W * 0.115), f: MONO, w: 'bold' };
+  const H2 = { px: Math.max(7, W * 0.075), f: MONO, w: 'bold' };
+  const P  = { px: Math.max(5, W * 0.045), f: MONO, w: '' };
+
+  function unitFor(key, el) {
+    let u = units.get(key);
+    if (!u) units.set(key, u = { el, ops: [] });
+    return u;
+  }
+
+  // Word-by-word layout: every token is placed (and hit-tested) on its own.
+  function place(el, style, upper = false, indent = 0, prefix = '') {
+    probe.font = font(style);
+    const left = pad + indent, right = W - pad;
+    const sp = probe.measureText(' ').width;
+    let x = left;
+    if (prefix) {
+      const w = probe.measureText(prefix).width;
+      ops.push({ t: prefix, s: style, x, y, w, h: style.px, unit: null });   // decoration, never resolves
+      x += w;
+    }
+    // Words are the layout atom, but a sentence is the resolve atom.
+    let sentence = {};                               // identity key, replaced at each full stop
+    for (const tok of tokensOf(el, upper)) {
+      const w = probe.measureText(tok.w).width;
+      if (x > left && x + w > right) { y += style.px * 1.25; x = left; }
+      const op = { t: tok.w, s: style, x, y, w, h: style.px, unit: null };
+      ops.push(op);
+      op.unit = unitFor(tok.link || sentence, tok.link);   // a link resolves on its own
+      op.unit.ops.push(op);
+      x += w + sp;
+      // ponytail: naive terminator test — "U.S." would split. Fix if that copy ever appears.
+      if (!tok.link && /[.!?][")'’\]]*$/.test(tok.w)) sentence = {};
+    }
+    y += style.px * 1.25;
+  }
+
+  for (const el of document.getElementById('doc').querySelectorAll('h1, h2, p, li, img')) {
+    if (el.tagName === 'H1') { place(el, H1, true); y += H1.px * 0.6; }
+    else if (el.tagName === 'H2') { y += H2.px * 0.9; place(el, H2, true); y += H2.px * 0.3; }
+    else if (el.tagName === 'LI') { place(el, P, false, pad, '— '); y += P.px * 0.5; }
+    else if (el.tagName === 'IMG') {
+      const w = W - pad * 2;
+      const op = { img: el, x: pad, y, w, h: w * el.naturalHeight / el.naturalWidth, unit: null };
+      ops.push(op);
+      op.unit = unitFor(el, el);
+      op.unit.ops.push(op);
+      y += op.h + P.px;
+    } else { place(el, P); y += P.px * 0.6; }
+  }
+  y += 6;
+  docRows = Math.ceil(y);
+
+  // Draw the document at SS× resolution so glyph edges land as real gray levels...
+  const hi = document.createElement('canvas');
+  hi.width = cols * SS; hi.height = docRows * SS;
+  const g = hi.getContext('2d');
+  g.fillStyle = '#000'; g.fillRect(0, 0, hi.width, hi.height);
+  g.setTransform(sx * SS, 0, 0, SS, 0, 0);
+  g.textBaseline = 'top';
+  g.fillStyle = '#fff';
+  for (const o of ops) {
+    if (o.img) g.drawImage(o.img, o.x, o.y, o.w, o.h);
+    else { g.font = font(o.s); g.fillText(o.t, o.x, o.y); }
+  }
+
+  // ...then let the browser box-filter it down to one pixel per cell, in C++.
+  const r = document.createElement('canvas');
+  r.width = cols; r.height = docRows;
+  const rg = r.getContext('2d', { willReadFrequently: true });
+  rg.imageSmoothingQuality = 'high';
+  rg.drawImage(hi, 0, 0, cols, docRows);
+
+  const d = rg.getImageData(0, 0, cols, docRows).data;
+  lum = new Float32Array(cols * docRows);
+  for (let i = 0, p = 0; i < lum.length; i++, p += 4)
+    lum[i] = (0.2126 * d[p] + 0.7152 * d[p + 1] + 0.0722 * d[p + 2]) / 255;
+}
+
+function measure() {
+  const dpr = devicePixelRatio || 1;
+  canvas.width = innerWidth * dpr;
+  canvas.height = innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.font = `${FONT_PX}px ${MONO}`;
+  ctx.textBaseline = 'top';
+  cw = ctx.measureText('M').width;
+  lh = FONT_PX;
+  cols = Math.ceil(innerWidth / cw);
+  rows = Math.ceil(innerHeight / lh);
+  ditherC = new Float32Array(cols);
+  ditherR = new Float32Array(rows + 2);
+  focus = shown = null; amt = 0;    // ops are rebuilt below; drop the stale references
+  rasterize();
+  spacer.style.height = (docRows * lh) + 'px';
+}
+
+// --- Attention: whatever is under the pointer resolves into real type -------
+// Raster->screen is a uniform scale of `lh` (x: logical * sx * cw == lh; y: row * lh),
+// so the same ops replay sharp with one transform, in perfect registration.
+function setFocus(u) { if (u === focus) return; if (u) amt = 0; focus = u; }
+
+function hit(px, py) {
+  const lx = px / lh, ly = (scrollY + py) / lh;
+  for (const o of ops)
+    if (o.unit && lx >= o.x && lx <= o.x + o.w && ly >= o.y && ly <= o.y + o.h) return o.unit;
+  return null;
+}
+
+addEventListener('pointermove', e => setFocus(hit(e.clientX, e.clientY)));
+addEventListener('pointerleave', () => setFocus(null));
+// Keyboard parity: tabbing to a link in the hidden DOM resolves that link too.
+document.getElementById('doc').addEventListener('focusin', e => {
+  for (const u of units.values()) if (u.el === e.target) return setFocus(u);
+  setFocus(null);
+});
+
+// Cells the resolving unit covers, so the ASCII underneath can be dissolved away
+// instead of being hidden under an opaque rectangle.
+// ponytail: one union range per row — units are short and contiguous, so it fits.
+function maskOf(u) {
+  const m = new Map();
+  for (const o of u.ops) {
+    const c0 = Math.floor(o.x * sx) - 1, c1 = Math.ceil((o.x + o.w) * sx) + 1;
+    for (let r = Math.floor(o.y) - 1; r <= Math.ceil(o.y + o.h); r++) {
+      const cur = m.get(r);
+      if (cur) { cur[0] = Math.min(cur[0], c0); cur[1] = Math.max(cur[1], c1); }
+      else m.set(r, [c0, c1]);
+    }
+  }
+  return m;
+}
+
+const hash = (c, r) => ((Math.imul(c + 1, 73856093) ^ Math.imul(r + 1, 19349663)) >>> 0 & 1023) / 1023;
+
+function resolve(u, a) {
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.translate(0, -scrollY);
+  ctx.scale(lh, lh);
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#e8e8e0';
+  for (const o of u.ops) {
+    if (o.img) {
+      ctx.filter = 'grayscale(1)';
+      ctx.drawImage(o.img, o.x, o.y, o.w, o.h);
+      ctx.filter = 'none';
+    } else {
+      ctx.font = font(o.s);
+      ctx.fillText(o.t, o.x, o.y);
+    }
+  }
+  ctx.restore();
+}
+
+// rasterize() is the expensive one — don't run it on every resize event.
+let resizeTimer;
+addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(measure, 150); });
+
+let t = 0;
+function draw() {
+  t += 0.02;
+  ctx.fillStyle = BG;
+  ctx.fillRect(0, 0, innerWidth, innerHeight);
+  ctx.font = `${FONT_PX}px ${MONO}`;
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#cfd6c8';
+
+  const top = Math.floor(scrollY / lh);
+  const off = -(scrollY % lh);
+  const last = RAMP.length - 1;
+
+  if (focus) shown = focus;
+  if (shown) amt += ((focus ? 1 : 0) - amt) * (still ? 1 : 0.18);
+  if (amt < 0.004) { amt = 0; shown = null; }
+  const mask = shown ? maskOf(shown) : null;
+
+  // The dither is separable, so it's cols+rows sines per frame, not cols*rows*2.
+  if (!still) {
+    for (let c = 0; c < cols; c++) ditherC[c] = Math.sin(c * 0.7 + t * 2.3) * 0.045;
+    for (let r = 0; r < rows + 1; r++) ditherR[r] = Math.sin((top + r) * 0.9 - t * 1.7);
+  }
+
+  for (let r = 0; r < rows + 1; r++) {
+    const dr = top + r;
+    if (dr < 0 || dr >= docRows) continue;
+    const row = dr * cols, dR = still ? 0 : ditherR[r];
+    const range = mask && mask.get(dr);
+    let s = '';
+    for (let c = 0; c < cols; c++) {
+      // Dissolve cell by cell as the real thing fades in over it: the *content* drops
+      // out, the ambient dither stays. Blanking to background would punch a flat hole
+      // in a field that is never flat anywhere else.
+      const dissolved = range && c >= range[0] && c <= range[1] && hash(c, dr) < amt;
+      const v = (dissolved ? 0 : lum[row + c]) + ditherC[c] * dR;
+      s += RAMP[v <= 0 ? 0 : v >= 1 ? last : Math.round(v * last)];
+    }
+    // One fillText per row — monospace advance places every glyph on the grid for free.
+    ctx.fillText(s, 0, off + r * lh);
+  }
+
+  if (shown) resolve(shown, amt);
+  requestAnimationFrame(draw);
+}
+
+await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+measure();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
