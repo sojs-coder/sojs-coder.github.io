@@ -48,6 +48,8 @@
 
         let vw = 0;
         let vh = 0;
+        let prevLifeVw = 0;
+        let prevLifeVh = 0;
         let cw;
         let lh;
         let sx;
@@ -310,7 +312,11 @@
             keyAmt = 0;
             glitchCells = new Map();
             glitchGroups = [];
-            initLife();
+            if (!isDomContent && (vw !== prevLifeVw || vh !== prevLifeVh)) {
+                initLife();
+                prevLifeVw = vw;
+                prevLifeVh = vh;
+            }
             if (isDomContent) {
                 panelHeight = "auto";
                 return;
