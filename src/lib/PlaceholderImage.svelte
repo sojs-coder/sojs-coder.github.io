@@ -3,7 +3,7 @@
 </script>
 
 {#if src}
-  <img src={src} alt={alt} loading="lazy" />
+  <img src={src} alt={alt} loading="lazy" decoding="async" />
 {:else}
   <div class="placeholder" role="img" aria-label={alt}>
     <span>Suggested screenshot size: {width} x {height}</span>

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { createFrameMetrics } from "./lib/frameMetrics.js";
 
     var canvas: HTMLCanvasElement = $state(null);
     var ctx: CanvasRenderingContext2D | null = null;
@@ -27,6 +28,7 @@
     const MAX_DELTA_MS = 33;
     const FADE_IN_RATE = 0.08;
     const FADE_OUT_RATE = 0.05;
+    const FRAME_INTERVAL = 1000 / 45;
 
     // Cellular-life layer driven by occupancy over time
     const LIFE_TICK_FRAMES = 6;
@@ -34,29 +36,42 @@
     const OCCUPIED_THRESHOLD = 0.45;
     const CROWD_LIMIT = 3.6;
 
-    let dots = $state<Dot[]>([]);
+    // This simulation never renders through Svelte, so reactive proxies only add overhead.
+    let dots: Dot[] = [];
     let lastFrame = 0;
+    let nextFrameAt = 0;
+    let raf = 0;
+    let visible = false;
     let frameCounter = 0;
     let bufferedPopulation = $state(0);
     let temporalOccupancy: Float32Array = new Float32Array(0);
+    let occupancyPool: Float32Array = new Float32Array(0);
     let mouse = { x: 0, y: 0, active: false };
     let nextDirsPool: [number, number][] = [];
     let bucketsPool: (number[])[] = [];
     let toRemoveIndices: number[] = [];
+    const frameMetrics = createFrameMetrics("Panel 1");
 
     onMount(() => {
         ctx = canvas.getContext("2d");
         buildDots();
-        
-        requestAnimationFrame(render);
+
+        const observer = new IntersectionObserver(([entry]) => {
+            visible = entry.isIntersecting;
+            if (visible) startRender();
+            else stopRender();
+        });
+        observer.observe(canvas);
 
         window.addEventListener("resize", updateWH);
-        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("pointermove", onMouseMove, { passive: true });
         window.addEventListener("mouseleave", onMouseLeave);
 
         return () => {
+            stopRender();
+            observer.disconnect();
             window.removeEventListener("resize", updateWH);
-            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("pointermove", onMouseMove);
             window.removeEventListener("mouseleave", onMouseLeave);
         };
     });
@@ -65,9 +80,33 @@
         WIDTH = window.innerWidth;
         HEIGHT = window.innerHeight;
     }
-    function render() {
-        if (!ctx) return;
-        const now = performance.now();
+
+    function startRender() {
+        if (raf) return;
+        frameMetrics.reset();
+        lastFrame = 0;
+        nextFrameAt = 0;
+        raf = requestAnimationFrame(render);
+    }
+
+    function stopRender() {
+        if (!raf) return;
+        cancelAnimationFrame(raf);
+        raf = 0;
+    }
+
+    function render(now: number) {
+        if (!ctx || !visible) {
+            raf = 0;
+            return;
+        }
+
+        if (now < nextFrameAt) {
+            raf = requestAnimationFrame(render);
+            return;
+        }
+        nextFrameAt = Math.max(now, nextFrameAt + FRAME_INTERVAL);
+        frameMetrics.record(now);
         if (lastFrame === 0) lastFrame = now;
         const deltaMs = Math.min(MAX_DELTA_MS, now - lastFrame);
         lastFrame = now;
@@ -80,7 +119,7 @@
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
         updateSimulation(deltaMs);
         drawDots();
-        requestAnimationFrame(render);
+        raf = requestAnimationFrame(render);
     }
 
     function drawDots() {
@@ -99,10 +138,15 @@
         }
     }
 
-    function onMouseMove(event: MouseEvent) {
-        mouse.x = event.clientX;
-        mouse.y = event.clientY;
-        mouse.active = true;
+    function onMouseMove(event: PointerEvent) {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = event.clientX - rect.left;
+        mouse.y = event.clientY - rect.top;
+        mouse.active =
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom;
     }
 
     function onMouseLeave() {
@@ -134,7 +178,9 @@
     function buildSpatialGrid(cellsX: number, cellsY: number) {
         const cellCount = cellsX * cellsY;
         const buckets: number[][] = bucketsPool;
-        const occupancy = new Float32Array(cellCount);
+        if (occupancyPool.length !== cellCount) occupancyPool = new Float32Array(cellCount);
+        else occupancyPool.fill(0);
+        const occupancy = occupancyPool;
 
         for (let i = 0; i < buckets.length; i++) buckets[i].length = 0;
         while (buckets.length < cellCount) buckets.push([]);
@@ -467,15 +513,17 @@
 
 <style>
     canvas {
-        position: fixed;
+        position: absolute;
         top: 0px;
         left: 0px;
+        width: 100%;
+        height: 100%;
         z-index: 0; /* above body background */
         pointer-events: none; /* never block scroll or clicks */
     }
 
     .boid-counter {
-        position: fixed;
+        position: absolute;
         top: 16px;
         right: 16px;
         font-size: 24px;
