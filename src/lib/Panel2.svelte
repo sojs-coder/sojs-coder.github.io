@@ -925,7 +925,7 @@
             <p><i>Resolution:</i></p>
             <p>With the invention of the typewriter, anyone could write.</p>
             <p>With the invention of generative AI, anyone can code.</p>
-            <p>Yet not everyone is a author.</p>
+            <p>Yet not everyone is an author.</p>
             <hr />
             <p>Any sufficiently advanced technology is indistinguishable from magic<a class="footnote-ref" href="#source-1" aria-label="Jump to attribution 1"><sup>1</sup></a></p>
             <p>The ideal life is one without omnipresent technology -- good design augments our lives without intruding.</p>
