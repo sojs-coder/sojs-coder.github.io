@@ -295,7 +295,8 @@
             const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
             soundInset = rootFontSize * 1.4;
             soundSize = rootFontSize * 2.2;
-            const dpr = devicePixelRatio || 1;
+            // The 5px ASCII renderer is deliberately pixelated; Retina backing pixels only add fill work.
+            const dpr = 1;
             canvas.width = vw * dpr;
             canvas.height = vh * dpr;
             revealCanvas.width = vw * dpr;
