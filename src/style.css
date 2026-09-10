@@ -1,0 +1,55 @@
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #b7b7b0 transparent; }
+body { margin: 0; background: #f6f6f3; color: #111; font-family: "Cormorant Garamond", "Iowan Old Style", "Times New Roman", serif; }
+body:has(dialog[open]) { overflow: hidden; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; border: 1px solid #c8c8c2; background: #f6f6f3; padding: 10px 16px; }
+button:disabled { opacity: 0.5; }
+a { color: inherit; text-decoration: none; }
+a:hover, button:hover:not(:disabled) { color: #555; }
+:focus-visible { outline: 2px solid #111; outline-offset: 4px; }
+main { min-height: 100svh; }
+.in-flight { height: 100svh; position: relative; overflow: hidden; }
+.site-header { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 27px 3.4vw; }
+.identity { font-size: 1.45rem; font-weight: 600; letter-spacing: 0.01em; }
+.identity span { display: block; font-size: 0.85rem; font-weight: 400; letter-spacing: 0.02em; margin-top: 6px; color: rgba(17,17,17,0.5); }
+nav { display: flex; align-items: center; gap: 30px; font-size: 0.85rem; letter-spacing: 0.04em; }
+nav button { border: 0; padding: 5px 0; background: transparent; }
+nav .current { text-decoration: underline; text-underline-offset: 6px; }
+.count { font-size: 10px; vertical-align: super; margin-left: 3px; }
+.world { position: absolute; inset: 0; z-index: 0; }
+.world.concealed { visibility: hidden; pointer-events: none; }
+.resume { position: absolute; z-index: 2; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.flight-bottom { position: absolute; z-index: 2; bottom: 66px; left: 3.4vw; right: 3.4vw; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+.controls { display: flex; gap: 17px; font-size: 12px; color: #666; flex-wrap: wrap; }
+.controls span { white-space: nowrap; }
+kbd { font: inherit; border: 1px solid #c8c8c2; padding: 3px 5px; }
+.reset { font-size: 12px; border: 0; padding: 8px 0; background: transparent; }
+.site-footer { position: relative; z-index: 2; margin: 40px 3.4vw 0; padding: 20px 0 22px; border-top: 1px solid #c8c8c2; display: flex; justify-content: flex-end; font-size: 0.85rem; color: rgba(17,17,17,0.55); }
+.in-flight .site-footer { position: absolute; bottom: 0; left: 3.4vw; right: 3.4vw; margin: 0; }
+.site-footer div { display: flex; gap: 25px; }
+.mobile-resume { display: none; }
+.project-index { padding: 40px 6.7vw; }
+.index-heading { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin-bottom: 35px; }
+h1 { font-weight: 400; }
+.index-heading h1 { font-size: 42px; margin: 0; }
+.flight-switch { font-size: 0.85rem; }
+.project-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 45px 28px; }
+.project-image { position: relative; aspect-ratio: 1.5; overflow: hidden; background: #eee; border: 1px solid #c8c8c2; }
+.project-image img { width: 100%; height: 100%; object-fit: cover; }
+.project-arrow { position: absolute; right: 12px; bottom: 12px; background: #f6f6f3; padding: 5px 10px; }
+.project-meta { color: #666; margin-top: 17px; font-size: 12px; }
+.project h2 { font-weight: 400; font-size: 28px; margin: 8px 0; }
+.project p { color: #666; font-size: 15px; line-height: 1.5; margin: 0; }
+.fallback-message { margin-bottom: 35px; }
+@media (max-width: 1000px) { .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .controls { gap: 10px; } }
+@media (max-width: 760px) {
+  .site-header { padding: 22px; align-items: flex-start; } .identity { font-size: 20px; } .identity span { font-size: 12px; } nav { gap: 15px; font-size: 12px; padding-top: 5px; } nav a { display: none; } .mobile-resume { display: inline; }
+  .project-index { padding: 30px 22px; } .project-grid { gap: 35px 18px; } .project h2 { font-size: 25px; }
+  .site-footer { margin-inline: 22px; } .site-footer div { gap: 18px; flex-wrap: wrap; } .controls { max-width: 270px; }
+}
+@media (max-width: 480px) { .project-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px), (prefers-reduced-motion: reduce), (pointer: coarse) { .flight-switch { display: none; } }
+.in-flight .site-header { background: linear-gradient(#f6f6f3f2, #f6f6f3cc 70%, transparent); }
+.in-flight .flight-bottom { background: #f6f6f3e8; padding: 0 12px; }
+.in-flight .controls { color: #444; }
+.in-flight .site-footer { background: #f6f6f3e8; padding-inline: 12px; color: #444; }

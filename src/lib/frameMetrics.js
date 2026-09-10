@@ -23,12 +23,12 @@ export function createFrameMetrics(panel) {
             const averageFrameTime = durations.reduce((sum, duration) => sum + duration, 0) / durations.length;
             const p99FrameTime = durations[Math.min(durations.length - 1, Math.ceil(durations.length * 0.99) - 1)];
 
-            console.log(`[${panel}] 15-second frame metrics`, {
+            console.log(`[${panel}] 15-second frame metrics`, JSON.stringify({
                 frameCount: durations.length,
                 averageFrameTimeMs: Number(averageFrameTime.toFixed(2)),
                 p99FrameTimeMs: Number(p99FrameTime.toFixed(2)),
                 averageFps: Number((1000 / averageFrameTime).toFixed(2)),
-            });
+            }));
 
             nextReport = now + WINDOW_MS;
         },
