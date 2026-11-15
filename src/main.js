@@ -1,6 +1,6 @@
 import { mount } from "svelte";
-import App from "./App.svelte";
+import Mockup from "./Mockup.svelte";
 
-mount(App, {
+mount(Mockup, {
   target: document.getElementById("app"),
 });

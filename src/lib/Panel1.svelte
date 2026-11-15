@@ -37,7 +37,6 @@
         align-items: end;
         gap: 3rem;
         padding: 4rem 2rem 3rem;
-        border-top: 1px solid #c8c8c2;
         border-left: 1px solid #c8c8c2;
         min-height: 100vh;
         height: 100vh;

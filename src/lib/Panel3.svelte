@@ -1,9 +1,5 @@
-<script>
-    import { onMount } from "svelte";
-    import ProjectCard from "./ProjectCard.svelte";
-    import { createFrameMetrics } from "./frameMetrics.js";
-
-    const heroProjects = [
+<script module>
+    export const heroProjects = [
         {
             id: "hero-feature",
             title: "Signalor",
@@ -19,6 +15,7 @@
         {
             id: "hero-right-1",
             title: "CCPorted",
+            award: "100K MAU",
             description: "Play video games.",
             category: "Featured",
             liveUrl: "https://ccported.web.app",
@@ -30,6 +27,7 @@
         {
             id: "hero-right-2",
             title: "COMBATOS",
+            award: "1st, DS3 x Bow Capital Hackathon",
             description: "End-to-end drone signal-denied automation software.",
             category: "Hackathon",
             liveUrl: "https://devpost.com/software/outcast-virus",
@@ -41,6 +39,7 @@
         {
             id: "hero-corner",
             title: "SODIUM",
+            award: "1st, UCSD DiamondHacks",
             description: "Personal care assistant robot.",
             category: "Hackathon",
             liveUrl: "https://devpost.com/software/sodium",
@@ -73,7 +72,27 @@
         },
     ];
 
-    const archiveProjects = [
+    export const archiveProjects = [
+        {
+            id: "truss",
+            title: "Truss",
+            description: "Research coalition answering open questions in frontier research.",
+            category: "Research",
+            liveUrl: "https://trussforum.org",
+            width: 1440,
+            height: 900,
+            imageUrl: "/images/trussforum.png",
+        },
+        {
+            id: "evidence-index",
+            title: "Company Evidence Index",
+            description: "Persistent, cited evidence index on a company's public claims, for investor due diligence.",
+            category: "Hackathon",
+            liveUrl: "https://github.com/sojs-coder/company-evidence-index",
+            width: 1440,
+            height: 900,
+            imageUrl: "/images/evidenceindex.png",
+        },
         {
             id: "rgtw4r3e",
             title: "WorldVis",
@@ -237,6 +256,12 @@
             imageUrl: "/images/lawnly.png",
         },
     ];
+</script>
+
+<script>
+    import { onMount } from "svelte";
+    import ProjectCard from "./ProjectCard.svelte";
+    import { createFrameMetrics } from "./frameMetrics.js";
 
     let expandedId = $state(null);
     let root = $state(null);

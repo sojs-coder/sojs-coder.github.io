@@ -20,7 +20,7 @@
     const HEAL_MS = 700;
     const GLITCH_FRACTION = 0.005;
     const EMIT_MS = 600;
-    const FRAME_INTERVAL = 1000 / 30;
+    const FRAME_INTERVAL = 1000 / 60;
     const GLITCH_SPAWN_INTERVAL = 180;
     const MOBILE_CONWAY_STEPS = 10;
 
